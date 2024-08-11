@@ -20,6 +20,7 @@ Objetivos del script:
 # defaults values
 DATA_INDEX = '1'
 MAX_FILES = 1000 # -1 usa todos los ficheros
+HOME = '.'
 
 def load_npy_files(file_paths):
     """
@@ -67,8 +68,8 @@ def create_tf_dataset(X_paths, Y_paths):
     #return dataset, X_data, Y_data # sobrecargara la memoria
     return dataset
 
-def load_tf_dataset(data_index=DATA_INDEX, max_files=MAX_FILES):
-    X_paths, Y_paths = get_datasets_paths_from_index(data_index=data_index, max_files=max_files)
+def load_tf_dataset(data_index=DATA_INDEX, max_files=MAX_FILES, home=HOME):
+    X_paths, Y_paths = get_datasets_paths_from_index(data_index=data_index, max_files=max_files, home=home)
     dataset = create_tf_dataset(X_paths, Y_paths)
 
     # if debug:

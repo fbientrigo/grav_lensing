@@ -9,8 +9,9 @@ HOME = os.getcwd()
 MAX_FILES = 100
 DATA_INDEX = '1'
 
-def get_data_directory(data_index=DATA_INDEX):
-    data_folder = os.path.join(HOME, 'data', data_index)
+def get_data_directory(data_index=DATA_INDEX, home=HOME):
+    data_folder = os.path.join(home, 'data', data_index)
+    print('Using data folder:', data_folder)
     x_data = os.path.join(data_folder,'EPSILON')
     y_data = os.path.join(data_folder,'KAPPA')
     return x_data, y_data
@@ -34,13 +35,13 @@ def list_files_from_directory(directory, max_files=MAX_FILES):
     return file_names
 
 
-def get_datasets_paths_from_index(data_index=DATA_INDEX, max_files=MAX_FILES):
+def get_datasets_paths_from_index(data_index=DATA_INDEX, max_files=MAX_FILES, home=HOME):
     """
     Obtiene dos valores, uno es la lista de nombres correspondientes a X, las features
     y el otro es a Y, la distribucion
 
     """
-    x_data, y_data = get_data_directory(data_index)
+    x_data, y_data = get_data_directory(data_index, home)
 
     X = list_files_from_directory(x_data, max_files)
     Y = list_files_from_directory(y_data, max_files)
