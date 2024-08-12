@@ -24,38 +24,66 @@ HOME = '.'
 
 def load_npy_files(file_paths):
     """
-    Carga archivos .npy a partir de una lista de rutas de archivos.
-    
+    Carga archivos .npy desde una lista de rutas de archivos.
+
+    Esta función carga múltiples archivos .npy, lo cual es común en flujos de trabajo científicos que 
+    involucran grandes conjuntos de datos.
+
     Parameters:
-        file_paths (list): Lista de rutas a los archivos .npy.
-        
+        rutas_archivos (list of str): Lista de rutas a los archivos .npy.
+
     Returns:
-        list: Lista de arrays cargados desde los archivos .npy.
+        list of numpy.ndarray: Lista de arrays cargados desde los archivos .npy.
+
+    Raises:
+        FileNotFoundError: Si alguno de los archivos en la lista no existe.
+        IOError: Si ocurre un error al intentar cargar un archivo.
+
+    Examples:
+        >>> rutas_archivos = ['data1.npy', 'data2.npy']
+        >>> arrays = load_npy_files(rutas_archivos)
     """
     return [np.load(file) for file in file_paths]
 
 def calculate_memory_size(arrays):
     """
     Calcula el tamaño total en memoria de una lista de arrays de numpy.
-    
+
+    Esta función suma el uso de memoria de cada array en la lista.
+
     Parameters:
-        arrays (list): Lista de numpy arrays.
-        
+        arrays (list of numpy.ndarray): Lista de numpy arrays.
+
     Returns:
         int: Tamaño total en memoria en bytes.
+
+    Examples:
+        >>> arrays = [np.array([1, 2, 3]), np.array([4, 5, 6])]
+        >>> total_size = calculate_memory_size(arrays)
     """
     return sum(array.nbytes for array in arrays)
 
 def create_tf_dataset(X_paths, Y_paths):
     """
-    Crea un TensorFlow Dataset a partir de listas de rutas de archivos .npy para X (features) e Y (labels).
-    
+    Crea un Dataset de TensorFlow a partir de listas de rutas de archivos .npy para X (características) y Y (etiquetas).
+
+    Esta función carga los datos desde archivos .npy y construye un Dataset de TensorFlow, asegurando que 
+    el número de muestras en X y Y coincida.
+
     Parameters:
-        X_paths (list): Lista de rutas a los archivos .npy de características.
-        Y_paths (list): Lista de rutas a los archivos .npy de etiquetas.
-        
+        rutas_X (list of str): Lista de rutas a los archivos .npy que contienen las características.
+        rutas_Y (list of str): Lista de rutas a los archivos .npy que contienen las etiquetas.
+
     Returns:
-        tf.data.Dataset: Dataset de TensorFlow para X e Y.
+        tf.data.Dataset: Dataset de TensorFlow que contiene pares de datos X e Y.
+
+    Raises:
+        AssertionError: Si el número de muestras en X y Y no coincide.
+
+    Examples:
+        >>> rutas_X = ['X_data1.npy', 'X_data2.npy']
+        >>> rutas_Y = ['Y_data1.npy', 'Y_data2.npy']
+        >>> dataset = create_tf_dataset(rutas_X, rutas_Y)
     """
     X_data = load_npy_files(X_paths)
     Y_data = load_npy_files(Y_paths)
@@ -69,15 +97,28 @@ def create_tf_dataset(X_paths, Y_paths):
     return dataset
 
 def load_tf_dataset(data_index=DATA_INDEX, max_files=MAX_FILES, home=HOME):
-    X_paths, Y_paths = get_datasets_paths_from_index(data_index=data_index, max_files=max_files, home=home)
-    dataset = create_tf_dataset(X_paths, Y_paths)
+    """
+    Carga un Dataset de TensorFlow a partir de listas de rutas de archivos .npy para X (características) y Y (etiquetas).
 
-    # if debug:
-    #     print(len(X_data))
-    #     X_memory_size = calculate_memory_size(X_data)
-    #     Y_memory_size = calculate_memory_size(Y_data)
-    #     print(f"Tamaño en memoria de X: {X_memory_size / (1024**2):.2f} MB")
-    #     print(f"Tamaño en memoria de Y: {Y_memory_size / (1024**2):.2f} MB")
+    Esta función recupera las rutas de los archivos usando un índice de datos y crea un Dataset de TensorFlow.
+
+    Parameters:
+        data_index (str, optional): Índice o identificador para el dataset a cargar. Por defecto es DATA_INDEX.
+        max_files (int, optional): Número máximo de archivos a cargar. Por defecto es MAX_FILES.
+        home (str, optional): Directorio principal para el almacenamiento del dataset. Por defecto es HOME.
+
+    Returns:
+        tf.data.Dataset: Dataset de TensorFlow que contiene datos X e Y.
+
+    Dependencias:
+        get_datasets_paths_from_index
+        create_tf_dataset
+
+    Examples:
+        >>> dataset = load_tf_dataset(data_index='001', max_files=10)
+    """
+    X_paths, Y_paths = get_datasets_paths_from_index(data_index=str(data_index), max_files=max_files, home=home)
+    dataset = create_tf_dataset(X_paths, Y_paths)
 
     return dataset
 
