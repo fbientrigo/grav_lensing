@@ -64,13 +64,25 @@ def calculate_memory_size(arrays):
     return sum(array.nbytes for array in arrays)
 
 def data_generator(X_paths, Y_paths):
+    """
+    Formateo necesario para que llevar los datos a la forma correcta que aceptan los algoritmos
+    """
     for X_path, Y_path in zip(X_paths, Y_paths):
         X = np.load(X_path)
         Y = np.load(Y_path)
+
+        # Verifica si X está en formato batch (4 dimensiones)
+        if X.ndim == 4:
+            # Reordena el eje si es necesario para el formato batch (4 dimensiones)
+            X = np.transpose(X, (0, 2, 3, 1))  # Cambia (batch_size, channels, height, width) a (batch_size, height, width, channels)
+        else:
+            # Si X no está en formato batch (3 dimensiones), simplemente reordena para (height, width, channels)
+            X = np.transpose(X, (1, 2, 0))  # Cambia (channels, height, width) a (height, width, channels)
+
+        # Expande las dimensiones de Y para el formato (height, width, 1)
         
-        # Reordena los ejes de X para que sea (128, 128, 3) en lugar de (3, 128, 128)
-        X = np.transpose(X, (1, 2, 0))
-        Y = np.expand_dims(Y, axis=-1)
+        Y = np.expand_dims(Y, axis=-1)  # Cambia (height, width) a (height, width, 1)
+        
         yield X, Y
 
 def create_tf_dataset(X_paths, Y_paths):
