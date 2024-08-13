@@ -63,6 +63,16 @@ def calculate_memory_size(arrays):
     """
     return sum(array.nbytes for array in arrays)
 
+def data_generator(X_paths, Y_paths):
+    for X_path, Y_path in zip(X_paths, Y_paths):
+        X = np.load(X_path)
+        Y = np.load(Y_path)
+        
+        # Reordena los ejes de X para que sea (128, 128, 3) en lugar de (3, 128, 128)
+        X = np.transpose(X, (1, 2, 0))
+        Y = np.expand_dims(Y, axis=-1)
+        yield X, Y
+
 def create_tf_dataset(X_paths, Y_paths):
     """
     Crea un Dataset de TensorFlow a partir de listas de rutas de archivos .npy para X (características) y Y (etiquetas).
@@ -92,7 +102,13 @@ def create_tf_dataset(X_paths, Y_paths):
     assert len(X_data) == len(Y_data), "El número de muestras en X y Y debe coincidir."
     
     # Convertir listas de numpy arrays a TensorFlow Dataset
-    dataset = tf.data.Dataset.from_tensor_slices((X_data, Y_data))
+    dataset = tf.data.Dataset.from_generator(
+        lambda: data_generator(X_paths, Y_paths),
+        output_signature=(
+            tf.TensorSpec(shape=(128, 128, 3), dtype=tf.float32),
+            tf.TensorSpec(shape=(128, 128,1 ), dtype=tf.float32)
+        )
+    )
     #return dataset, X_data, Y_data # sobrecargara la memoria
     return dataset
 
