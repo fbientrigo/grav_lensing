@@ -120,10 +120,10 @@ def create_tf_dataset(X_paths, Y_paths):
         lambda: data_generator(X_paths, Y_paths),
         output_signature=(
             tf.TensorSpec(shape=(128, 128, 3), dtype=tf.float32),
-            tf.TensorSpec(shape=(128, 128,1 ), dtype=tf.float32)
+            tf.TensorSpec(shape=(128, 128, 1), dtype=tf.float32)
         )
     )
-    #return dataset, X_data, Y_data # sobrecargara la memoria
+
     return dataset
 
 def load_tf_dataset(data_index=DATA_INDEX, max_files=MAX_FILES, home=HOME):
@@ -152,20 +152,19 @@ def load_tf_dataset(data_index=DATA_INDEX, max_files=MAX_FILES, home=HOME):
 
     return dataset
 
-# Seccion encargada de conseguir training,validation y testing ------------
-def split_dataset(X_data, Y_data, val_split=0.2, test_split=0.1):
-    # Dividir los datos en entrenamiento y conjunto temporal
-    X_train, X_temp, Y_train, Y_temp = train_test_split(X_data, Y_data, test_size=val_split + test_split)
+# # Seccion encargada de conseguir training,validation y testing ------------
+# def split_dataset(X_data, Y_data, val_split=0.2, test_split=0.1):
+#     # Dividir los datos en entrenamiento y conjunto temporal
+#     X_train, X_temp, Y_train, Y_temp = train_test_split(X_data, Y_data, test_size=val_split + test_split)
     
-    # Dividir los datos temporales en validación y prueba
-    X_val, X_test, Y_val, Y_test = train_test_split(X_temp, Y_temp, test_size=test_split / (val_split + test_split))
+#     # Dividir los datos temporales en validación y prueba
+#     X_val, X_test, Y_val, Y_test = train_test_split(X_temp, Y_temp, test_size=test_split / (val_split + test_split))
     
-    # Convertir a dataset de TensorFlow
-    train_dataset = tf.data.Dataset.from_tensor_slices((X_train, Y_train))
-    val_dataset = tf.data.Dataset.from_tensor_slices((X_val, Y_val))
-    test_dataset = tf.data.Dataset.from_tensor_slices((X_test, Y_test))
-    
-    return train_dataset, val_dataset, test_dataset
+#     # Convertir a dataset de TensorFlow
+#     train_dataset = tf.data.Dataset.from_tensor_slices((X_train, Y_train))
+#     val_dataset = tf.data.Dataset.from_tensor_slices((X_val, Y_val))
+#     test_dataset = tf.data.Dataset.from_tensor_slices((X_test, Y_test))
+#     return train_dataset, val_dataset, test_dataset
 
 def prepare_dataset(dataset, batch_size=32, shuffle_buffer=1000):
     dataset = dataset.shuffle(buffer_size=shuffle_buffer)  # Mezclar datos
@@ -173,18 +172,43 @@ def prepare_dataset(dataset, batch_size=32, shuffle_buffer=1000):
     dataset = dataset.prefetch(buffer_size=tf.data.experimental.AUTOTUNE)  # Prefetch para optimización
     return dataset
 
-def get_datasets(data_index='4', max_files=100, home='..', batch_size=32, val_split=0.2, test_split=0.1):
+def get_datasets(data_index=4, max_files=100, home='..', batch_size=32, val_split=0.2, test_split=0.1):
     """
-    La funcion hija que extrae el dataset a partir de los generadores y las ordena 
+    Obtiene y divide los datasets en entrenamiento, validación y prueba,
+    y los prepara para el entrenamiento con el tamaño de batch especificado.
+
+    Parameters:
+        data_index (str, optional): Índice o identificador para el dataset a cargar. Por defecto es '4'.
+        max_files (int, optional): Número máximo de archivos a cargar. Por defecto es 100.
+        home (str, optional): Directorio principal para el almacenamiento del dataset. Por defecto es '..'.
+        batch_size (int, optional): Tamaño del batch para el dataset. Por defecto es 32.
+        val_split (float, optional): Proporción de datos para el conjunto de validación. Por defecto es 0.2.
+        test_split (float, optional): Proporción de datos para el conjunto de prueba. Por defecto es 0.1.
+
+    Returns:
+        tuple: Tres datasets de TensorFlow (train_dataset, val_dataset, test_dataset).
     """
-    dataset = load_tf_dataset(data_index=data_index, max_files=max_files, home=home)
+    # Obtener rutas de archivos
+    X_paths, Y_paths = get_datasets_paths_from_index(data_index=str(data_index), max_files=max_files, home=home)
     
-    # Convertir el dataset en arrays Numpy para facilitar la división
-    X_data = np.array([X.numpy() for X, _ in dataset])
-    Y_data = np.array([Y.numpy() for _, Y in dataset])
+    # Mezclar rutas para aleatorizar
+    combined_paths = list(zip(X_paths, Y_paths))
+    np.random.shuffle(combined_paths)
+    X_paths, Y_paths = zip(*combined_paths)
     
-    # Dividir el dataset en entrenamiento, validación y prueba
-    train_dataset, val_dataset, test_dataset = split_dataset(X_data, Y_data, val_split, test_split)
+    # Calcular índices de división
+    total_files = len(X_paths)
+    val_size = int(total_files * val_split)
+    test_size = int(total_files * test_split)
+    
+    # Dividir rutas en entrenamiento, validación y prueba
+    X_train_paths, X_val_paths, X_test_paths = X_paths[:-val_size-test_size], X_paths[-val_size-test_size:-test_size], X_paths[-test_size:]
+    Y_train_paths, Y_val_paths, Y_test_paths = Y_paths[:-val_size-test_size], Y_paths[-val_size-test_size:-test_size], Y_paths[-test_size:]
+    
+    # Crear datasets para cada conjunto
+    train_dataset = create_tf_dataset(X_train_paths, Y_train_paths)
+    val_dataset = create_tf_dataset(X_val_paths, Y_val_paths)
+    test_dataset = create_tf_dataset(X_test_paths, Y_test_paths)
     
     # Preparar cada dataset
     train_dataset = prepare_dataset(train_dataset, batch_size)
