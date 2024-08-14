@@ -1,50 +1,44 @@
-
+import argparse
 import skopt
 from skopt import gp_minimize, forest_minimize
 from skopt.space import Real, Integer, Categorical
 from skopt.callbacks import CheckpointSaver
-
-from skopt.plots import plot_convergence
-from skopt.plots import plot_objective, plot_evaluations
-from skopt.plots import plot_histogram, plot_objective_2D
-
+from skopt.plots import plot_convergence, plot_objective, plot_evaluations, plot_histogram, plot_objective_2D
 from skopt.utils import use_named_args
-
-# guardar informacion
 import pickle
 import os
 import datetime
 import json
-
-
-
 import matplotlib.pyplot as plt
-from grav_lens import load_tf_dataset, get_datasets
-
 import numpy as np
 import tensorflow as tf
-
-#data
 from tensorflow.keras import backend as K
-from tensorflow.keras.datasets import mnist
-# training and modeling
 from tensorflow.keras.callbacks import TensorBoard
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Input, Dense, Flatten, Conv2D, MaxPooling2D
+from grav_lens import load_tf_dataset, get_datasets
+import time
 
+# Definir la función para el parser de argumentos
+def parse_args():
+    parser = argparse.ArgumentParser(description="Script para la optimización de hiperparámetros")
+    parser.add_argument("--n_calls", type=int, default=31, help="Número de llamadas para la optimización")
+    parser.add_argument("--max_files", type=int, default=1000, help="Número máximo de archivos a usar")
+    parser.add_argument("--home", type=str, default="path/dataset/", help="Directorio base del dataset")
+    return parser.parse_args()
 
-# inputs
+# Obtener los argumentos de la línea de comandos
+args = parse_args()
 
-N_CALLS = 31
-MAX_FILES = 1000
-
-
-# ----- 
+# Usar los argumentos
+N_CALLS = args.n_calls
+MAX_FILES = args.max_files
+HOME = args.home
 
 
 
 # Ejemplo de uso
-train_dataset, val_dataset, test_dataset = get_datasets(data_index='6', max_files=100, home='..')
+train_dataset, val_dataset, test_dataset = get_datasets(data_index='6', max_files=MAX_FILES, home=HOME)
 
 for X, Y in train_dataset.take(1):  # Mostrar un batch de entrenamiento
     print("Train X:", X.shape)
@@ -58,7 +52,8 @@ for X, Y in test_dataset.take(1):  # Mostrar un batch de prueba
     print("Test X:", X.shape)
     print("Test Y:", Y.shape)
 
-import tensorflow as tf
+
+# Parte de definir el modelo y su perdida
 
 def combined_loss(weight_kl=0.1):
     def loss(y_true, y_pred):
@@ -297,7 +292,8 @@ default_parameters = [1e-4, 'sigmoid',
                       0.96, 10]
 
 import time
-# Inicializar best_accuracy
+
+# Minimizaremos el Loss
 best_loss = float('inf')
 verbose = 1
 counter = 1
