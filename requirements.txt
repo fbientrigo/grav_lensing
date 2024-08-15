@@ -16,7 +16,6 @@ flatbuffers==24.3.25
 fonttools==4.53.1
 gast==0.6.0
 google-pasta==0.2.0
--e git+https://github.com/fbientrigo/grav_lensing@9aa9f59d45beffc60b73bed023dfeb3ab68374e9#egg=grav_lens&subdirectory=final
 grpcio==1.65.4
 h5py==3.11.0
 idna==3.7
@@ -34,8 +33,8 @@ libclang==18.1.1
 Markdown==3.6
 markdown-it-py==3.0.0
 MarkupSafe==2.1.5
-matplotlib==3.9.1
-matplotlib-inline==0.1.7
+matplotlib
+matplotlib-inline
 mdurl==0.1.2
 ml-dtypes==0.4.0
 namex==0.0.8
