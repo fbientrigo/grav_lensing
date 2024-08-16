@@ -110,10 +110,10 @@ class HyperparameterOptimizer:
 
     def run_hyp_optimize(self, train_dataset, val_dataset, n_calls=17, verbose_train=True, verbose_val=False):
         checkpoint_saver = CheckpointSaver("checkpoint.pkl", compress=9)
-
+        min_function = self.create_F_objective(train_dataset, val_dataset, verbose_train, verbose_val)
         start_time = time.time()
         res = gp_minimize(
-            func=self.create_F_objective(train_dataset, val_dataset, verbose_train, verbose_val),
+            func=min_function,
             dimensions=self.dimensions,
             acq_func='EI', 
             n_calls=n_calls,
