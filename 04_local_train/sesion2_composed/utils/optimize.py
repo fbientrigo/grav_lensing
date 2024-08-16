@@ -60,6 +60,9 @@ dimensions = [
 
 
 # Función objetivo
+best_loss = float('inf')
+verbose = 1
+counter = 1
 def create_F_objective(train_dataset, val_dataset, verbose_train=True, verbose_val=False):
     @use_named_args(dimensions=dimensions)
     def F_objective(learning_rate, 
@@ -119,6 +122,15 @@ def create_F_objective(train_dataset, val_dataset, verbose_train=True, verbose_v
     return F_objective
 
 def run_test_optimize(train_dataset, val_dataset, n_calls=17, verbose_train=True, verbose_val=False):
+    # Comprobar funcionamiento
+    start_time = time.time()
+    (create_F_objective(train_dataset, val_dataset, n_calls, verbose_train, verbose_val))(x=default_parameters)
+    end_time = time.time()
+    execution_time_minutes = (end_time - start_time) / 60
+    print(f"Execution time: {execution_time_minutes:.2f} minutes")
+    return res
+
+def run_hyp_optimize(train_dataset, val_dataset, n_calls=17, verbose_train=True, verbose_val=False):
     checkpoint_saver = CheckpointSaver("checkpoint.pkl", compress=9)
 
     # Ejecutar la optimización
