@@ -9,16 +9,13 @@ def load_hyperparameters(counter):
 
 
 def load_model_with_hyperparameters(counter, create_model):
-    """
-    Utiliza la función create model y el index
-    """
     # Cargar los hiperparámetros
     hyperparameters = load_hyperparameters(counter)
-    # es necesario crear una forma general de pasar los argumentos a un create model general
-
+    learning_rate = hyperparameters['learning_rate']
+    activation = hyperparameters['activation']
 
     # Recrear el modelo con los hiperparámetros cargados
-    model = create_model(**hyperparameters)
+    model = create_model(learning_rate, activation)
     
     # Cargar los pesos del modelo
     model.load_weights(f'best_model_{counter}.weights.h5')
