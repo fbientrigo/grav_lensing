@@ -1,0 +1,16 @@
+{
+    "learning_rate": 0.004206894649696163,
+    "in_activation": "sigmoid",
+    "h_activation": "relu",
+    "out_activation": "relu",
+    "h_kernel_size": 2,
+    "hidden_filters": 17,
+    "out_kernel_size": 4,
+    "weight_kl": 0.18174557196886237,
+    "beta_1": 0.7625931245276684,
+    "beta_2": 0.8938820611861577,
+    "epsilon": 1.6256711253140482e-05,
+    "amsgrad": true,
+    "decay_steps": 29074,
+    "decay_rate": 0.9196955613096589
+}
