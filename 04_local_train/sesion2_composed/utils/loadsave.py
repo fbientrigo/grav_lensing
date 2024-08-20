@@ -24,25 +24,23 @@ def load_model_with_hyperparameters(counter, create_model, home_json="."):
     return model
 
 
-def save_hyperparameters(learning_rate, in_activation, h_activation, out_activation, 
-                         h_kernel_size, hidden_filters, out_kernel_size, weight_kl, 
-                         beta_1, beta_2, epsilon, amsgrad, decay_steps, decay_rate, counter, home_json="."):
+def save_hyperparameters(learning_rate, 
+                         h_kernel_size, hidden_filters, out_kernel_size, 
+                         beta_1, beta_2, epsilon, decay_steps, decay_rate, counter, home_json="."):
     """
     Guarda los hiperparámetros en un archivo JSON.
 
     Args:
         learning_rate (float): Tasa de aprendizaje para el optimizador.
-        in_activation (str): Función de activación para la capa de entrada.
-        h_activation (str): Función de activación para las capas ocultas.
-        out_activation (str): Función de activación para la capa de salida.
+
         h_kernel_size (int): Tamaño del kernel para las capas ocultas.
         hidden_filters (int): Número de filtros en las capas ocultas.
         out_kernel_size (int): Tamaño del kernel para la capa de salida.
-        weight_kl (float): Peso para KL Divergence en la pérdida combinada.
+
         beta_1 (float): Parámetro beta_1 para el optimizador Adam.
         beta_2 (float): Parámetro beta_2 para el optimizador Adam.
         epsilon (float): Parámetro epsilon para el optimizador Adam.
-        amsgrad (bool): Indica si se debe usar AMSGrad en el optimizador Adam.
+
         decay_steps (int): Número de pasos para el decaimiento del learning rate.
         decay_rate (float): Tasa de decaimiento para el learning rate.
         counter (int): Identificador para el archivo de guardado.
@@ -58,17 +56,12 @@ def save_hyperparameters(learning_rate, in_activation, h_activation, out_activat
 
     hyperparameters = {
         'learning_rate': serialize_value(learning_rate),
-        'in_activation': in_activation,
-        'h_activation': h_activation,
-        'out_activation': out_activation,
         'h_kernel_size': serialize_value(h_kernel_size),
         'hidden_filters': serialize_value(hidden_filters),
         'out_kernel_size': serialize_value(out_kernel_size),
-        'weight_kl': serialize_value(weight_kl),
         'beta_1': serialize_value(beta_1),
         'beta_2': serialize_value(beta_2),
         'epsilon': serialize_value(epsilon),
-        'amsgrad': amsgrad,
         'decay_steps': serialize_value(decay_steps),
         'decay_rate': serialize_value(decay_rate)
     }
