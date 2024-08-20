@@ -1,31 +1,32 @@
 import json
 import datetime
 import numpy as np
+import os
 
-def load_hyperparameters(counter):
-    with open(f'hyperparameters_{counter}.json', 'r') as f:
+def load_hyperparameters(counter, home_json="."):
+    hyp_path = os.path.join(home_json, f'hyperparameters_{counter}.json' )
+    with open(hyp_path, 'r') as f:
         hyperparameters = json.load(f)
     return hyperparameters
 
 
-def load_model_with_hyperparameters(counter, create_model):
+def load_model_with_hyperparameters(counter, create_model, home_json="."):
     # Cargar los hiperparámetros
-    hyperparameters = load_hyperparameters(counter)
-    learning_rate = hyperparameters['learning_rate']
-    activation = hyperparameters['activation']
+    hyperparameters = load_hyperparameters(counter, home_json)
 
     # Recrear el modelo con los hiperparámetros cargados
-    model = create_model(learning_rate, activation)
+    model = create_model(**hyperparameters)
     
     # Cargar los pesos del modelo
-    model.load_weights(f'best_model_{counter}.weights.h5')
+    model_path = os.path.join(home_json,f'best_model_{counter}.weights.h5' )
+    model.load_weights(model_path)
 
     return model
 
 
 def save_hyperparameters(learning_rate, in_activation, h_activation, out_activation, 
                          h_kernel_size, hidden_filters, out_kernel_size, weight_kl, 
-                         beta_1, beta_2, epsilon, amsgrad, decay_steps, decay_rate, counter):
+                         beta_1, beta_2, epsilon, amsgrad, decay_steps, decay_rate, counter, home_json="."):
     """
     Guarda los hiperparámetros en un archivo JSON.
 
@@ -72,7 +73,8 @@ def save_hyperparameters(learning_rate, in_activation, h_activation, out_activat
         'decay_rate': serialize_value(decay_rate)
     }
     
-    with open(f'hyperparameters_{counter}.json', 'w') as f:
+    hyp_path = os.path.join(home_json, f'hyperparameters_{counter}.json' )
+    with open(hyp_path, 'w') as f:
         json.dump(hyperparameters, f, indent=4)
 
 

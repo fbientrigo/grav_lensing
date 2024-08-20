@@ -17,7 +17,7 @@ dimensions = [
             Real(low=1e-6, high=1e-2, prior='log-uniform', name='learning_rate'),
             Categorical(categories=['relu', 'sigmoid', 'tanh'], name='in_activation'),
             Categorical(categories=['relu', 'sigmoid', 'tanh'], name='h_activation'),
-            Categorical(categories=['relu', 'sigmoid', 'tanh'], name='out_activation'),
+            Categorical(categories=['sigmoid', 'tanh'], name='out_activation'),
             Integer(low=2, high=7, name='h_kernel_size'),
             Integer(low=16, high=128, name='hidden_filters'),
             Integer(low=2, high=7, name='out_kernel_size'),
@@ -34,34 +34,3 @@ dimensions = [
 default_parameters = [1e-4, 'sigmoid', 'sigmoid', 'sigmoid', 3, 64, 3, 
     0.1, 0.9, 0.99, 1e-7, False, 10000, 0.96, 10]
 
-
-
-# TODO 
-# modificar para correr una vez ahora que no es parte de la clase
-
-# def run_test_optimize(self, verbose_train=True, verbose_val=False):
-#     """
-#     Ejecuta una prueba rápida de optimización utilizando los parámetros predeterminados,
-#     y luego restaura `best_loss` y `counter` a sus valores originales.
-
-#     Args:
-#         verbose_train (bool): Indica si se debe mostrar el progreso del entrenamiento.
-#         verbose_val (bool): Indica si se debe mostrar el progreso de la evaluación.
-
-#     Returns:
-#         None
-#     """
-#     # Guardar el estado original de best_loss y counter
-#     original_best_loss = self.best_loss
-#     original_counter = self.counter
-
-#     try:
-#         start_time = time.time()
-#         self.F_objective(*self.default_parameters)
-#         end_time = time.time()
-#         execution_time_minutes = (end_time - start_time) / 60
-#         print(f"Execution time: {execution_time_minutes:.2f} minutes")
-#     finally:
-#         # Restaurar best_loss y counter a sus valores originales
-#         self.best_loss = original_best_loss
-#         self.counter = original_counter
