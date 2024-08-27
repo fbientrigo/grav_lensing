@@ -168,7 +168,7 @@ def load_tf_dataset(data_index=DATA_INDEX, max_files=MAX_FILES, home=HOME):
 
 def prepare_dataset(dataset, batch_size=32, output_count=1, shuffle_buffer=1000):
     dataset = dataset.shuffle(buffer_size=shuffle_buffer)  # Mezclar datos
-    dataset = dataset.map(lambda x, y: (x, [y] * output_count))
+    #dataset = dataset.map(lambda x, y: (x, [y] * output_count))
 
     dataset = dataset.batch(batch_size)  # Batching
     dataset = dataset.prefetch(buffer_size=tf.data.experimental.AUTOTUNE)  # Prefetch para optimización
