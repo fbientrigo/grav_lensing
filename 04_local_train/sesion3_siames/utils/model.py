@@ -94,7 +94,7 @@ def create_model(learning_rate=1e-4,
                         'output_mae': 'mae', 
                         'output_mse': 'mse', 
                         'output_logcosh': 'logcosh', 
-                        'output_dice': dicen},_loss_bi
+                        'output_dice': dicen},
                   loss_weights={'output_image': 1.0,  # Prioridad a la salida principal
                                 'output_mae': 0.0,  # Las demás se usan para cálculo de pérdidas solamente
                                 'output_mse': 0.0,
