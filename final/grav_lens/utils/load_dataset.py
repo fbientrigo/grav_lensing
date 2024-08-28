@@ -166,13 +166,16 @@ def load_tf_dataset(data_index=DATA_INDEX, max_files=MAX_FILES, home=HOME):
 #     test_dataset = tf.data.Dataset.from_tensor_slices((X_test, Y_test))
 #     return train_dataset, val_dataset, test_dataset
 
-def prepare_dataset(dataset, batch_size=32, shuffle_buffer=1000):
+def prepare_dataset(dataset, batch_size=32, output_count=1, shuffle_buffer=1000):
     dataset = dataset.shuffle(buffer_size=shuffle_buffer)  # Mezclar datos
+    #dataset = dataset.map(lambda x, y: (x, [y] * output_count))
+
     dataset = dataset.batch(batch_size)  # Batching
     dataset = dataset.prefetch(buffer_size=tf.data.experimental.AUTOTUNE)  # Prefetch para optimización
     return dataset
 
-def get_datasets(data_index=4, max_files=100, home='..', batch_size=32, val_split=0.2, test_split=0.1):
+def get_datasets(data_index=4, max_files=100, home='..', batch_size=32, 
+    val_split=0.2, test_split=0.1, output_count=1):
     """
     Obtiene y divide los datasets en entrenamiento, validación y prueba,
     y los prepara para el entrenamiento con el tamaño de batch especificado.
@@ -211,9 +214,9 @@ def get_datasets(data_index=4, max_files=100, home='..', batch_size=32, val_spli
     test_dataset = create_tf_dataset(X_test_paths, Y_test_paths)
     
     # Preparar cada dataset
-    train_dataset = prepare_dataset(train_dataset, batch_size)
-    val_dataset = prepare_dataset(val_dataset, batch_size)
-    test_dataset = prepare_dataset(test_dataset, batch_size)
+    train_dataset = prepare_dataset(train_dataset, batch_size, output_count=output_count)
+    val_dataset = prepare_dataset(val_dataset, batch_size, output_count=output_count)
+    test_dataset = prepare_dataset(test_dataset, batch_size, output_count=output_count)
     
     return train_dataset, val_dataset, test_dataset
 

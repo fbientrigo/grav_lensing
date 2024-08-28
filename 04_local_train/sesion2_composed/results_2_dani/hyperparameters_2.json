@@ -1,0 +1,11 @@
+{
+    "learning_rate": 6.158441854020408e-05,
+    "h_kernel_size": 6,
+    "hidden_filters": 19,
+    "out_kernel_size": 5,
+    "beta_1": 0.609405073488552,
+    "beta_2": 0.20350462360453056,
+    "epsilon": 4.1654090830920356e-07,
+    "decay_steps": 11575,
+    "decay_rate": 0.8647076008164372
+}

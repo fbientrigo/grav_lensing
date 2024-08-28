@@ -25,7 +25,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "01 Potencial y magnificacion.md",
+                "file": "training/Funciones de Perdida.md",
                 "mode": "source",
                 "source": false
               }
@@ -98,7 +98,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "01 Potencial y magnificacion.md",
+                "file": "training/Funciones de Perdida.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -115,7 +115,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "01 Potencial y magnificacion.md",
+                "file": "training/Funciones de Perdida.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -138,7 +138,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "01 Potencial y magnificacion.md"
+                "file": "training/Funciones de Perdida.md"
               }
             }
           }
@@ -161,11 +161,13 @@
   },
   "active": "22f79486e04e8bc2",
   "lastOpenFiles": [
+    "01 Potencial y magnificacion.md",
+    "training/Funciones de Perdida.md",
+    "training",
     "pdf/01 Potencial y magnificacion.pdf",
     "pdf",
     "New folder",
     "Pasted image 20240803210344.png",
-    "Welcome.md",
-    "01 Potencial y magnificacion.md"
+    "Welcome.md"
   ]
 }
