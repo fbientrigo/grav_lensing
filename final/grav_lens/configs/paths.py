@@ -9,12 +9,39 @@ HOME = os.getcwd()
 MAX_FILES = 100
 DATA_INDEX = '1'
 
-def get_data_directory(data_index=DATA_INDEX, home=HOME):
-    data_folder = os.path.join(home, 'data', data_index)
-    print('Using data folder:', data_folder)
-    x_data = os.path.join(data_folder,'EPSILON')
-    y_data = os.path.join(data_folder,'KAPPA')
-    return x_data, y_data
+def get_data_directory(data_index=DATA_INDEX, home=HOME, max_attempts=10):
+    """
+    Busca un directorio de datos específico, intentando diferentes índices numéricos si el directorio
+    no existe.
+
+    Esta función busca una carpeta de datos en el directorio especificado por 'home' y 'data_index'.
+    Si no encuentra la carpeta con el 'data_index' proporcionado, intenta con otros números hasta 
+    un máximo de 'max_attempts'.
+
+    Parameters:
+        data_index (str, optional): El índice de datos inicial a buscar. Por defecto es DATA_INDEX.
+        home (str, optional): El directorio principal donde se encuentran los datos. Por defecto es HOME.
+        max_attempts (int, optional): El número máximo de intentos para encontrar un directorio válido. Por defecto es 10.
+
+    Returns:
+        tuple: Rutas a los directorios de los datos 'EPSILON' y 'KAPPA'.
+
+    Raises:
+        FileNotFoundError: Si no se encuentra un directorio de datos válido después de 'max_attempts' intentos.
+
+    Examples:
+        >>> x_data, y_data = get_data_directory(data_index='1')
+    """
+    for attempt in range(int(data_index), int(data_index) + max_attempts):
+        data_folder = os.path.join(home, str(attempt))
+        if os.path.exists(data_folder):
+            print('Using data folder:', data_folder)
+            x_data = os.path.join(data_folder, 'EPSILON')
+            y_data = os.path.join(data_folder, 'KAPPA')
+            return x_data, y_data
+
+    raise FileNotFoundError(f"No se encontró un directorio de datos válido después de {max_attempts} intentos a partir de {data_index}.")
+
 
 
 def list_files_from_directory(directory, max_files=MAX_FILES):

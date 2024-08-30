@@ -47,19 +47,24 @@ def create_model(learning_rate=1e-4,
     Modelo que agranda las dimensiones espaciales hasta 256x256 y luego las reduce a 128x128.
     """
 
-    input_layer = tf.keras.layers.Input(shape=(128, 128, 3))
+    input_layer = tf.keras.layers.Input(shape=(128, 128, 3)) #128x128
 
     x = tf.keras.layers.Conv2D(32, (3, 3), activation="sigmoid", padding='same')(input_layer)
     x = tf.keras.layers.BatchNormalization()(x)
-    x = tf.keras.layers.UpSampling2D(size=(2, 2))(x)
+
+    x = tf.keras.layers.UpSampling2D(size=(2, 2))(x) # 256, 256
     x = tf.keras.layers.Conv2D(hidden_filters, (h_kernel_size, h_kernel_size), activation="sigmoid", padding='same')(x)
+
     x = tf.keras.layers.BatchNormalization()(x)
     x = tf.keras.layers.Conv2D(2 * hidden_filters, (h_kernel_size, h_kernel_size), activation="sigmoid", padding='same')(x)
+
+
     x = tf.keras.layers.BatchNormalization()(x)
-    x = tf.keras.layers.MaxPooling2D(pool_size=(2, 2))(x)
+    x = tf.keras.layers.MaxPooling2D(pool_size=(2, 2))(x) # 128x128
     x = tf.keras.layers.Conv2D(64, (3, 3), activation="tanh", padding='same')(x)
     x = tf.keras.layers.BatchNormalization()(x)
     
+    # output 128x128
     output_image = tf.keras.layers.Conv2D(1, (out_kernel_size, out_kernel_size), activation="tanh", padding='same', name='output_image')(x)
 
 
@@ -89,7 +94,7 @@ def create_model(learning_rate=1e-4,
                         'output_mae': 'mae', 
                         'output_mse': 'mse', 
                         'output_logcosh': 'logcosh', 
-                        'output_dice': dice_loss_bin},
+                        'output_dice': dicen},
                   loss_weights={'output_image': 1.0,  # Prioridad a la salida principal
                                 'output_mae': 0.0,  # Las demás se usan para cálculo de pérdidas solamente
                                 'output_mse': 0.0,
