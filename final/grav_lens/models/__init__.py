@@ -1,1 +1,1 @@
-from .testing import test_model_image
+from .plot_results import test_model_image

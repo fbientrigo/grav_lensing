@@ -6,7 +6,7 @@ from grav_lens.configs.paths import get_data_directory, list_files_from_director
 
 import tensorflow as tf
 
-from sklearn.model_selection import train_test_split
+
 
 # Eventualmente, este código de carga de datasets se moverá a utils
 # from grav_lens.utils.dataset import load_dataset
@@ -24,42 +24,52 @@ DATA_INDEX = '1'
 MAX_FILES = 1000 # -1 usa todos los ficheros
 HOME = '.'
 
-def load_npy_file(file_path):
+def load_npy_files(file_paths):
     """
-    Function to load a .npy file and preprocess it.
-    """
-    data = np.load(file_path.decode('utf-8'))
-    
-    # Example processing: reshape or transpose if needed
-    if data.ndim == 3:  # Assuming shape is (channels, height, width)
-        data = np.transpose(data, (1, 2, 0))  # Convert to (height, width, channels)
-    return data.astype(np.float32)
+    Carga archivos .npy desde una lista de rutas de archivos.
 
-
-def calculate_memory_size(arrays):
-    """
-    Calcula el tamaño total en memoria de una lista de arrays de numpy.
-
-    Esta función suma el uso de memoria de cada array en la lista.
+    Esta función carga múltiples archivos .npy, lo cual es común en flujos de trabajo científicos que 
+    involucran grandes conjuntos de datos.
 
     Parameters:
-        arrays (list of numpy.ndarray): Lista de numpy arrays.
+        rutas_archivos (list of str): Lista de rutas a los archivos .npy.
 
     Returns:
-        int: Tamaño total en memoria en bytes.
+        list of numpy.ndarray: Lista de arrays cargados desde los archivos .npy.
+
+    Raises:
+        FileNotFoundError: Si alguno de los archivos en la lista no existe.
+        IOError: Si ocurre un error al intentar cargar un archivo.
 
     Examples:
-        >>> arrays = [np.array([1, 2, 3]), np.array([4, 5, 6])]
-        >>> total_size = calculate_memory_size(arrays)
+        >>> rutas_archivos = ['data1.npy', 'data2.npy']
+        >>> arrays = load_npy_files(rutas_archivos)
     """
-    return sum(array.nbytes for array in arrays)
+    return [np.load(file) for file in file_paths]
 
-def file_path_generator(X_paths, Y_paths):
+
+
+def data_generator(X_paths, Y_paths):
     """
-    Generator function that yields file paths incrementally.
+    Formateo necesario para que llevar los datos a la forma correcta que aceptan los algoritmos
     """
     for X_path, Y_path in zip(X_paths, Y_paths):
-        yield X_path, Y_path
+        X = np.load(X_path)
+        Y = np.load(Y_path)
+
+        # Verifica si X está en formato batch (4 dimensiones)
+        if X.ndim == 4:
+            # Reordena el eje si es necesario para el formato batch (4 dimensiones)
+            X = np.transpose(X, (0, 2, 3, 1))  # Cambia (batch_size, channels, height, width) a (batch_size, height, width, channels)
+        else:
+            # Si X no está en formato batch (3 dimensiones), simplemente reordena para (height, width, channels)
+            X = np.transpose(X, (1, 2, 0))  # Cambia (channels, height, width) a (height, width, channels)
+
+        # Expande las dimensiones de Y para el formato (height, width, 1)
+        
+        Y = np.expand_dims(Y, axis=-1)  # Cambia (height, width) a (height, width, 1)
+        
+        yield X, Y
 
 def create_tf_dataset(X_paths, Y_paths):
     """
@@ -83,22 +93,19 @@ def create_tf_dataset(X_paths, Y_paths):
         >>> rutas_Y = ['Y_data1.npy', 'Y_data2.npy']
         >>> dataset = create_tf_dataset(rutas_X, rutas_Y)
     """
-    # Use from_generator to load data on demand
-    dataset = tf.data.Dataset.from_generator(
-        lambda: file_path_generator(X_paths, Y_paths),
-        output_signature=(
-            tf.TensorSpec(shape=(), dtype=tf.string),
-            tf.TensorSpec(shape=(), dtype=tf.string)
-        )
-    )
+    X_data = load_npy_files(X_paths)
+    Y_data = load_npy_files(Y_paths)
+
+    # Verificación de integridad
+    assert len(X_data) == len(Y_data), "El número de muestras en X y Y debe coincidir."
     
-    # Map file paths to actual data loading
-    dataset = dataset.map(
-        lambda X_path, Y_path: (
-            tf.numpy_function(load_npy_file, [X_path], tf.float32),
-            tf.numpy_function(load_npy_file, [Y_path], tf.float32)
-        ),
-        num_parallel_calls=tf.data.experimental.AUTOTUNE
+    # Convertir listas de numpy arrays a TensorFlow Dataset
+    dataset = tf.data.Dataset.from_generator(
+        lambda: data_generator(X_paths, Y_paths),
+        output_signature=(
+            tf.TensorSpec(shape=(128, 128, 3), dtype=tf.float32),
+            tf.TensorSpec(shape=(128, 128, 1), dtype=tf.float32)
+        )
     )
 
     return dataset
@@ -129,8 +136,6 @@ def load_tf_dataset(data_index=DATA_INDEX, max_files=MAX_FILES, home=HOME):
 
     return dataset
 
-# ---------------------------
-
 # # Seccion encargada de conseguir training,validation y testing ------------
 # def split_dataset(X_data, Y_data, val_split=0.2, test_split=0.1):
 #     # Dividir los datos en entrenamiento y conjunto temporal
@@ -153,7 +158,7 @@ def prepare_dataset(dataset, batch_size=32, output_count=1, shuffle_buffer=1000)
     dataset = dataset.prefetch(buffer_size=tf.data.experimental.AUTOTUNE)  # Prefetch para optimización
     return dataset
 
-def get_datasets(data_index=4, max_files=100, home='..', batch_size=32, 
+def old_get_datasets(data_index=4, max_files=100, home='..', batch_size=32, 
     val_split=0.2, test_split=0.1, output_count=1):
     """
     Obtiene y divide los datasets en entrenamiento, validación y prueba,
@@ -203,11 +208,7 @@ def get_datasets(data_index=4, max_files=100, home='..', batch_size=32,
 
 
 if __name__ == "__main__":
-    home = os.path.join(
-        "..","..","..", "data"
-    )
-    print(home)
-    dataset = load_tf_dataset(data_index=DATA_INDEX, max_files=MAX_FILES, home=home)
+    dataset = load_tf_dataset(data_index=DATA_INDEX, max_files=MAX_FILES)
 
     # Imprimir información básica del dataset para verificar
     for X, Y in dataset.take(5):  # Solo mostrar los primeros 5 elementos
