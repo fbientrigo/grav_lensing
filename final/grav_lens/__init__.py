@@ -9,3 +9,4 @@ os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'  # Deshabilitar oneDNN
 from .utils import *
 from .configs import *
 from .metrics import *
+from .models import *
