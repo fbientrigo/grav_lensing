@@ -1,6 +1,12 @@
 import matplotlib.pyplot as plt
 
 def test_model_image(model, test_dataset, outs=1):
+    """
+    Se ingresa el modelo y el dataset para hacer testing
+
+    outs corresponde al numero de salidas que tiene el modelo,
+    en caso de que el modelo tenga mas de una salida, se tomara la primera output
+    """
     for X, Y in test_dataset.take(1):
         if outs == 1:
             prediction = model.predict(X)

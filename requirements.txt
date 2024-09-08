@@ -16,7 +16,8 @@ flatbuffers==24.3.25
 fonttools==4.53.1
 gast==0.6.0
 google-pasta==0.2.0
--e git+https://github.com/fbientrigo/grav_lensing@9fb517afda8c751844eea4dd36c15fa903ec22bf#egg=grav_lens&subdirectory=final
+tf-keras
+tensorflow_probability 
 grpcio==1.65.4
 h5py==3.11.0
 idna==3.7
