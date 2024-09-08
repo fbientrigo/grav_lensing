@@ -83,7 +83,7 @@ def create_tf_dataset(X_paths, Y_paths):
         >>> rutas_Y = ['Y_data1.npy', 'Y_data2.npy']
         >>> dataset = create_tf_dataset(rutas_X, rutas_Y)
     """
-    # Use from_generator to load data on demand
+
     dataset = tf.data.Dataset.from_generator(
         lambda: file_path_generator(X_paths, Y_paths),
         output_signature=(
@@ -92,11 +92,21 @@ def create_tf_dataset(X_paths, Y_paths):
         )
     )
     
-    # Map file paths to actual data loading
+
     dataset = dataset.map(
         lambda X_path, Y_path: (
             tf.numpy_function(load_npy_file, [X_path], tf.float32),
             tf.numpy_function(load_npy_file, [Y_path], tf.float32)
+        ),
+        num_parallel_calls=tf.data.experimental.AUTOTUNE
+    )
+
+    
+
+    dataset = dataset.map(
+        lambda X, Y: (
+            tf.ensure_shape(X, [128, 128, 3]),
+            tf.ensure_shape(tf.expand_dims(Y, axis=-1), [128, 128, 1])
         ),
         num_parallel_calls=tf.data.experimental.AUTOTUNE
     )
@@ -145,16 +155,42 @@ def load_tf_dataset(data_index=DATA_INDEX, max_files=MAX_FILES, home=HOME):
 #     test_dataset = tf.data.Dataset.from_tensor_slices((X_test, Y_test))
 #     return train_dataset, val_dataset, test_dataset
 
-def prepare_dataset(dataset, batch_size=32, output_count=1, shuffle_buffer=1000):
+def prepare_dataset(dataset, batch_size=32, shuffle_buffer=1000, drop_remainder=False):
     dataset = dataset.shuffle(buffer_size=shuffle_buffer)  # Mezclar datos
-    #dataset = dataset.map(lambda x, y: (x, [y] * output_count))
+    dataset = dataset.batch(batch_size, drop_remainder=drop_remainder)  # Batching
 
-    dataset = dataset.batch(batch_size)  # Batching
     dataset = dataset.prefetch(buffer_size=tf.data.experimental.AUTOTUNE)  # Prefetch para optimización
     return dataset
 
+
+def warnings_size_dataset(total_files, train_size, val_size, test_size, batch_size):
+    """
+    Comprueba que existan suficientes muestras de cada uno,
+    al crear batchs pueden quedar muestras vacias lo que provoca que no entrene con ese batch
+    por tanto se ha optado por eliminar los batchs incompletos.
+
+    Sin embargo en el caso de usar pocos datos y un batch_size significativo, pueden quedar batch vacios
+    """
+    # Validar que haya suficientes datos para al menos un batch en validación y prueba
+    if val_size//batch_size == 0:
+        warnings.warn(f"El conjunto de validación tiene solo {val_size} muestras, lo que no es suficiente para formar un batch completo. Considere ajustar 'val_split' o 'batch_size'.")
+        val_size = batch_size  # Ajusta el tamaño de validación para que haya al menos un batch completo.
+    
+    if test_size//batch_size == 0:
+        warnings.warn(f"El conjunto de prueba tiene solo {test_size} muestras, lo que no es suficiente para formar un batch completo. Considere ajustar 'test_split' o 'batch_size'.")
+        test_size = batch_size  # Ajusta el tamaño de prueba para que haya al menos un batch completo.
+    
+    # Asegurarse de que los datos de entrenamiento no queden vacíos
+    train_size = total_files - val_size - test_size
+    if train_size//batch_size == 0:
+        raise ValueError(f"No hay suficientes datos para entrenamiento. Después de la división, el conjunto de entrenamiento tiene solo {train_size} muestras. Ajuste las proporciones o el tamaño del batch.")
+    
+    # Dividir 
+
+
+
 def get_datasets(data_index=4, max_files=100, home='..', batch_size=32, 
-    val_split=0.2, test_split=0.1, output_count=1):
+    val_split=0.2, test_split=0.1):
     """
     Obtiene y divide los datasets en entrenamiento, validación y prueba,
     y los prepara para el entrenamiento con el tamaño de batch especificado.
@@ -181,6 +217,8 @@ def get_datasets(data_index=4, max_files=100, home='..', batch_size=32,
     total_files = len(X_paths)
     val_size = int(total_files * val_split)
     test_size = int(total_files * test_split)
+
+    #warnings_size_dataset(total_files, train_size, val_size, test_size, batch_size)
     
     # Dividir rutas en entrenamiento, validación y prueba
     X_train_paths, X_val_paths, X_test_paths = X_paths[:-val_size-test_size], X_paths[-val_size-test_size:-test_size], X_paths[-test_size:]
@@ -192,9 +230,9 @@ def get_datasets(data_index=4, max_files=100, home='..', batch_size=32,
     test_dataset = create_tf_dataset(X_test_paths, Y_test_paths)
     
     # Preparar cada dataset
-    train_dataset = prepare_dataset(train_dataset, batch_size, output_count=output_count)
-    val_dataset = prepare_dataset(val_dataset, batch_size, output_count=output_count)
-    test_dataset = prepare_dataset(test_dataset, batch_size, output_count=output_count)
+    train_dataset = prepare_dataset(train_dataset, batch_size, drop_remainder=True)
+    val_dataset = prepare_dataset(val_dataset, batch_size)
+    test_dataset = prepare_dataset(test_dataset, batch_size)
     
     return train_dataset, val_dataset, test_dataset
 
