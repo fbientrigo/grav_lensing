@@ -1,6 +1,7 @@
+import numpy as np
+import tensorflow as tf
 from sklearn.preprocessing import StandardScaler
 import pickle
-import numpy as np
 
 class CustomScaler:
     def __init__(self):
@@ -31,10 +32,12 @@ class CustomScaler:
         Retorna:
         - El batch normalizado.
         """
-        y_batch_flat = y_batch.numpy().reshape(-1, 1)  # Aplanar
+        y_batch = y_batch.numpy()  # Convertir a numpy
+        y_batch_flat = y_batch.reshape(-1, 1)  # Aplanar
         y_batch_scaled = self.scaler.transform(y_batch_flat)  # Escalar
         y_batch_scaled = y_batch_scaled.reshape(y_batch.shape)  # Volver a la forma original
-        return y_batch_scaled
+        return tf.convert_to_tensor(y_batch_scaled, dtype=tf.float32)  # Convertir de vuelta a tensor
+
 
     def inverse_transform(self, y_batch_scaled):
         """
@@ -50,13 +53,3 @@ class CustomScaler:
         y_batch_original = self.scaler.inverse_transform(y_batch_flat)  # Desescalar
         y_batch_original = y_batch_original.reshape(y_batch_scaled.shape)  # Volver a la forma original
         return y_batch_original
-
-    def save_scaler(self, filepath):
-        """Función para guardar el scaler en un archivo pickle."""
-        with open(filepath, 'wb') as file:
-            pickle.dump(self.scaler, file)
-
-    def load_scaler(self, filepath):
-        """Función para cargar el scaler desde un archivo pickle."""
-        with open(filepath, 'rb') as file:
-            self.scaler = pickle.load(file)
