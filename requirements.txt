@@ -1,12 +1,9 @@
 h5py
-imageio
 keras
 numpy
 pandas
-scikit-image
 scikit-learn
-scikit-optimize
 scipy
 matplotlib
 tensorflow
-
+matplotlib
