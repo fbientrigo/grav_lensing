@@ -56,14 +56,14 @@ class CustomScaler:
 
 
 class CustomMinMaxScaler:
-    def __init__(self, feature_range=(0, 1)):
+    def __init__(self, feature_range=(0, 1), clip=True):
         """
         Inicializa el MinMaxScaler con el rango de características deseado.
         
         Parámetros:
         - feature_range: El rango en el que los datos serán escalados. Por defecto es (0, 1).
         """
-        self.scaler = MinMaxScaler(feature_range=feature_range)
+        self.scaler = MinMaxScaler(feature_range=feature_range, clip=clip)
 
     def fit_scaler(self, dataset):
         """
