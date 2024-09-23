@@ -39,11 +39,15 @@ pip install -e .
 Se encuentra implementado scripts para cargar los datos en formato tensorflow y ademas utilizar prefetching para ahorrar memoria.
 
 # Distribución de Ficheros
-- `final/`: El usuario debe ingresar aquí para utilizar el dataset y las funcionalidades de las librerías.
-  - `final/data/`: Aquí se encuentra el dataset en forma de carpetas, con nombre `1/` en el caso básico.
-  - `final/grav_lens/`: Contiene la librería principal para el manejo del modelo de lente gravitacional.
+- `lib/`: El usuario debe ingresar aquí para utilizar el dataset y las funcionalidades de las librerías.
+  - `lib/grav_lens/`: Contiene la librería principal para el manejo del modelo de lente gravitacional.
     - `configs/`: Contiene archivos de configuración como rutas de datos.
+    - `metrics/`: Las distintas metricas de la competencia
+    - `models/`: Contiene archivos para construir los modelos una vez ya ha pasado las fases de experimentación
+    - `testing/`: Contiene funciones de medición de recursos
     - `utils/`: Contiene utilidades y funciones auxiliares, como la carga y visualización de datasets.
+    - `preprocess/`: Incluye filtering y pre procesamiento para modelos como el de Gaussian Mixture
+    
     - `__init__.py`: Archivo de inicialización para la librería `grav_lens`.
   - `scripts/`: Scripts que realizan operaciones específicas utilizando la librería `grav_lens`.
     - `visualize_dataset.py`: Script para visualizar el dataset de manera gráfica.
