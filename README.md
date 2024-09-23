@@ -1,9 +1,6 @@
 # grav_lensing
 A Python toy model for gravitational lensing with educative means
 
-## documentación
-Puedes acceder a la documentación directamente en el siguiente [enlace](lib/docs/_build/html/index.html).
-
 ## Contribuir
 Tip 1: apenas vayas a comenzar a trabajar, es recomendable hacer
 ```bash
