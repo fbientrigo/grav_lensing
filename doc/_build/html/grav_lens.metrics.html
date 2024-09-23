@@ -58,7 +58,7 @@
 <li class="toctree-l4"><a class="reference internal" href="grav_lens.utils.html">grav_lens.utils package</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="grav_lens.html#module-contents">Module contents</a></li>
+<li class="toctree-l3"><a class="reference internal" href="grav_lens.html#module-grav_lens">Module contents</a></li>
 </ul>
 </li>
 </ul>
@@ -96,11 +96,158 @@
 <section id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
 </section>
-<section id="grav-lens-metrics-scoring-challenge-module">
-<h2>grav_lens.metrics.scoring_challenge module<a class="headerlink" href="#grav-lens-metrics-scoring-challenge-module" title="Link to this heading"></a></h2>
+<section id="module-grav_lens.metrics.scoring_challenge">
+<span id="grav-lens-metrics-scoring-challenge-module"></span><h2>grav_lens.metrics.scoring_challenge module<a class="headerlink" href="#module-grav_lens.metrics.scoring_challenge" title="Link to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="grav_lens.metrics.scoring_challenge.DICEE">
+<span class="sig-prename descclassname"><span class="pre">grav_lens.metrics.scoring_challenge.</span></span><span class="sig-name descname"><span class="pre">DICEE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">P</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.5</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/grav_lens/metrics/scoring_challenge.html#DICEE"><span class="viewcode-link"><span class="pre">[fuente]</span></span></a><a class="headerlink" href="#grav_lens.metrics.scoring_challenge.DICEE" title="Link to this definition"></a></dt>
+<dd><p>Calcula el coeficiente DICE ponderado entre dos tensores.</p>
+<p>El coeficiente DICE es una métrica de similitud utilizada principalmente en tareas de segmentación,
+donde se evalúa el grado de coincidencia entre dos conjuntos binarios. Esta función extiende el coeficiente
+DICE estándar al permitir ponderar falsos positivos y falsos negativos con los parámetros alpha y beta.</p>
+<dl>
+<dt>Parameters:</dt><dd><p>T (tf.Tensor): Tensor que representa las etiquetas reales o el ground truth.
+P (tf.Tensor): Tensor que representa las predicciones.
+alpha (float, optional): Factor de ponderación para los falsos negativos. Por defecto es 0.5.
+beta (float, optional): Factor de ponderación para los falsos positivos. Por defecto es 0.5.</p>
+</dd>
+<dt>Returns:</dt><dd><dl class="simple">
+<dt>tf.Tensor or None: Un tensor escalar que representa el coeficiente DICE calculado.</dt><dd><p>Devuelve None si las formas de T y P no coinciden.</p>
+</dd>
+</dl>
+</dd>
+<dt>Examples:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">T</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">constant</span><span class="p">([[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">P</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">constant</span><span class="p">([[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dice</span> <span class="o">=</span> <span class="n">DICEE</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">P</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">dice</span><span class="o">.</span><span class="n">numpy</span><span class="p">())</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="grav_lens.metrics.scoring_challenge.DICE_binary_mask">
+<span class="sig-prename descclassname"><span class="pre">grav_lens.metrics.scoring_challenge.</span></span><span class="sig-name descname"><span class="pre">DICE_binary_mask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tensor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/grav_lens/metrics/scoring_challenge.html#DICE_binary_mask"><span class="viewcode-link"><span class="pre">[fuente]</span></span></a><a class="headerlink" href="#grav_lens.metrics.scoring_challenge.DICE_binary_mask" title="Link to this definition"></a></dt>
+<dd><p>Genera una máscara binaria a partir de un tensor.</p>
+<p>Esta función crea una máscara binaria basada en la diferencia de cada elemento del tensor
+respecto a la media del tensor. Los valores mayores a la media se establecen en 1, mientras
+que los valores menores o iguales a la media se establecen en 0.</p>
+<dl>
+<dt>Parameters:</dt><dd><p>tensor (tf.Tensor): Un tensor de entrada sobre el cual se calculará la máscara binaria.</p>
+</dd>
+<dt>Returns:</dt><dd><dl class="simple">
+<dt>tf.Tensor: Un tensor binario (del mismo tamaño que el tensor de entrada) con valores 1 para</dt><dd><p>los elementos que están por encima de la media y 0 para los que están por debajo
+o son iguales a la media.</p>
+</dd>
+</dl>
+</dd>
+<dt>Examples:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">tensor</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">constant</span><span class="p">([[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">],</span> <span class="p">[</span><span class="mf">3.0</span><span class="p">,</span> <span class="mf">4.0</span><span class="p">]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mask</span> <span class="o">=</span> <span class="n">DICE_binary_mask</span><span class="p">(</span><span class="n">tensor</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">mask</span><span class="o">.</span><span class="n">numpy</span><span class="p">())</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="grav_lens.metrics.scoring_challenge.DPEAKS">
+<span class="sig-prename descclassname"><span class="pre">grav_lens.metrics.scoring_challenge.</span></span><span class="sig-name descname"><span class="pre">DPEAKS</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">P</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_peaks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/grav_lens/metrics/scoring_challenge.html#DPEAKS"><span class="viewcode-link"><span class="pre">[fuente]</span></span></a><a class="headerlink" href="#grav_lens.metrics.scoring_challenge.DPEAKS" title="Link to this definition"></a></dt>
+<dd><p>Calcula la distancia absoluta sumada entre las cumbres principales de dos imágenes.</p>
+<p>Esta función compara las cumbres principales de dos imágenes encontradas mediante la función
+<cite>find_top_k_peaks</cite> y calcula la suma de las distancias absolutas entre las posiciones de cumbres
+correspondientes.</p>
+<dl>
+<dt>Parameters:</dt><dd><p>T (np.ndarray): Primera imagen (o tensor) para comparar.
+P (np.ndarray): Segunda imagen (o tensor) para comparar.
+num_peaks (int, optional): Número de cumbres principales a encontrar en cada imagen. Por defecto es 3.</p>
+</dd>
+<dt>Returns:</dt><dd><p>float: La suma de las distancias absolutas entre las cumbres principales de las dos imágenes.</p>
+</dd>
+<dt>Examples:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">T</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">P</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dpeaks</span> <span class="o">=</span> <span class="n">DPEAKS</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">P</span><span class="p">,</span> <span class="n">num_peaks</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">dpeaks</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="grav_lens.metrics.scoring_challenge.TestMetrics">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">grav_lens.metrics.scoring_challenge.</span></span><span class="sig-name descname"><span class="pre">TestMetrics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">methodName</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'runTest'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/grav_lens/metrics/scoring_challenge.html#TestMetrics"><span class="viewcode-link"><span class="pre">[fuente]</span></span></a><a class="headerlink" href="#grav_lens.metrics.scoring_challenge.TestMetrics" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">TestCase</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="grav_lens.metrics.scoring_challenge.TestMetrics.setUp">
+<span class="sig-name descname"><span class="pre">setUp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/grav_lens/metrics/scoring_challenge.html#TestMetrics.setUp"><span class="viewcode-link"><span class="pre">[fuente]</span></span></a><a class="headerlink" href="#grav_lens.metrics.scoring_challenge.TestMetrics.setUp" title="Link to this definition"></a></dt>
+<dd><p>Hook method for setting up the test fixture before exercising it.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="grav_lens.metrics.scoring_challenge.TestMetrics.test_DICEE">
+<span class="sig-name descname"><span class="pre">test_DICEE</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/grav_lens/metrics/scoring_challenge.html#TestMetrics.test_DICEE"><span class="viewcode-link"><span class="pre">[fuente]</span></span></a><a class="headerlink" href="#grav_lens.metrics.scoring_challenge.TestMetrics.test_DICEE" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="grav_lens.metrics.scoring_challenge.TestMetrics.test_DICE_binary_mask">
+<span class="sig-name descname"><span class="pre">test_DICE_binary_mask</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/grav_lens/metrics/scoring_challenge.html#TestMetrics.test_DICE_binary_mask"><span class="viewcode-link"><span class="pre">[fuente]</span></span></a><a class="headerlink" href="#grav_lens.metrics.scoring_challenge.TestMetrics.test_DICE_binary_mask" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="grav_lens.metrics.scoring_challenge.TestMetrics.test_DPEAKS">
+<span class="sig-name descname"><span class="pre">test_DPEAKS</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/grav_lens/metrics/scoring_challenge.html#TestMetrics.test_DPEAKS"><span class="viewcode-link"><span class="pre">[fuente]</span></span></a><a class="headerlink" href="#grav_lens.metrics.scoring_challenge.TestMetrics.test_DPEAKS" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="grav_lens.metrics.scoring_challenge.TestMetrics.test_WMAPE">
+<span class="sig-name descname"><span class="pre">test_WMAPE</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/grav_lens/metrics/scoring_challenge.html#TestMetrics.test_WMAPE"><span class="viewcode-link"><span class="pre">[fuente]</span></span></a><a class="headerlink" href="#grav_lens.metrics.scoring_challenge.TestMetrics.test_WMAPE" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="grav_lens.metrics.scoring_challenge.WMAPE">
+<span class="sig-prename descclassname"><span class="pre">grav_lens.metrics.scoring_challenge.</span></span><span class="sig-name descname"><span class="pre">WMAPE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T:</span> <span class="pre">~tensorflow.python.framework.tensor.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">P:</span> <span class="pre">~tensorflow.python.framework.tensor.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delta=&lt;tf.Tensor:</span> <span class="pre">shape=()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype=float32</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">numpy=1e-05&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/grav_lens/metrics/scoring_challenge.html#WMAPE"><span class="viewcode-link"><span class="pre">[fuente]</span></span></a><a class="headerlink" href="#grav_lens.metrics.scoring_challenge.WMAPE" title="Link to this definition"></a></dt>
+<dd><p>Calcula el Error Medio Absoluto Porcentual Ponderado (WMAPE) entre dos tensores.
+El WMAPE es una métrica de error que tiene en cuenta la magnitud de las
+observaciones reales al ponderar las diferencias absolutas entre las predicciones
+y los valores reales. Esta métrica es útil en escenarios donde los valores reales
+tienen una variabilidad significativa, permitiendo un cálculo más equitativo del error.</p>
+<dl>
+<dt>Parameters:</dt><dd><p>T (tf.Tensor): Tensor que representa los valores reales u observados.
+P (tf.Tensor): Tensor que representa los valores predichos.
+delta (tf.Tensor, optional): Un pequeño valor constante para evitar divisiones por cero.</p>
+<blockquote>
+<div><p>Por defecto es 1e-5.</p>
+</div></blockquote>
+</dd>
+<dt>Returns:</dt><dd><p>tf.Tensor: Un tensor escalar que representa el WMAPE calculado.</p>
+</dd>
+<dt>Examples:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">T</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">constant</span><span class="p">([</span><span class="mf">10.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">5.0</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">P</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">constant</span><span class="p">([</span><span class="mf">9.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">5.0</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">wmape</span> <span class="o">=</span> <span class="n">WMAPE</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">P</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">wmape</span><span class="o">.</span><span class="n">numpy</span><span class="p">())</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="grav_lens.metrics.scoring_challenge.find_top_k_peaks">
+<span class="sig-prename descclassname"><span class="pre">grav_lens.metrics.scoring_challenge.</span></span><span class="sig-name descname"><span class="pre">find_top_k_peaks</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">im</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/grav_lens/metrics/scoring_challenge.html#find_top_k_peaks"><span class="viewcode-link"><span class="pre">[fuente]</span></span></a><a class="headerlink" href="#grav_lens.metrics.scoring_challenge.find_top_k_peaks" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="grav_lens.metrics.scoring_challenge.main">
+<span class="sig-prename descclassname"><span class="pre">grav_lens.metrics.scoring_challenge.</span></span><span class="sig-name descname"><span class="pre">main</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/grav_lens/metrics/scoring_challenge.html#main"><span class="viewcode-link"><span class="pre">[fuente]</span></span></a><a class="headerlink" href="#grav_lens.metrics.scoring_challenge.main" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
 </section>
-<section id="module-contents">
-<h2>Module contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
+<section id="module-grav_lens.metrics">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-grav_lens.metrics" title="Link to this heading"></a></h2>
 </section>
 </section>
 

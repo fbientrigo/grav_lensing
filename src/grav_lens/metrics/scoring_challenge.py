@@ -10,7 +10,6 @@ import unittest
 def WMAPE(T: tf.Tensor, P: tf.Tensor, delta=tf.constant(1e-5, dtype=tf.float32)):
     """
     Calcula el Error Medio Absoluto Porcentual Ponderado (WMAPE) entre dos tensores.
-
     El WMAPE es una métrica de error que tiene en cuenta la magnitud de las
     observaciones reales al ponderar las diferencias absolutas entre las predicciones
     y los valores reales. Esta métrica es útil en escenarios donde los valores reales
@@ -21,10 +20,10 @@ def WMAPE(T: tf.Tensor, P: tf.Tensor, delta=tf.constant(1e-5, dtype=tf.float32))
         P (tf.Tensor): Tensor que representa los valores predichos.
         delta (tf.Tensor, optional): Un pequeño valor constante para evitar divisiones por cero. 
                                         Por defecto es 1e-5.
-
+    
     Returns:
         tf.Tensor: Un tensor escalar que representa el WMAPE calculado.
-
+    
     Examples:
         >>> T = tf.constant([10.0, 0.0, 5.0])
         >>> P = tf.constant([9.0, 1.0, 5.0])

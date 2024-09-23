@@ -58,7 +58,7 @@
 <li class="toctree-l4"><a class="reference internal" href="grav_lens.utils.html">grav_lens.utils package</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="grav_lens.html#module-contents">Module contents</a></li>
+<li class="toctree-l3"><a class="reference internal" href="grav_lens.html#module-grav_lens">Module contents</a></li>
 </ul>
 </li>
 </ul>
@@ -96,14 +96,239 @@
 <section id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
 </section>
-<section id="grav-lens-preprocess-filtering-module">
-<h2>grav_lens.preprocess.filtering module<a class="headerlink" href="#grav-lens-preprocess-filtering-module" title="Link to this heading"></a></h2>
+<section id="module-grav_lens.preprocess.filtering">
+<span id="grav-lens-preprocess-filtering-module"></span><h2>grav_lens.preprocess.filtering module<a class="headerlink" href="#module-grav_lens.preprocess.filtering" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="grav_lens.preprocess.filtering.CustomMinMaxScaler">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">grav_lens.preprocess.filtering.</span></span><span class="sig-name descname"><span class="pre">CustomMinMaxScaler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">feature_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0,</span> <span class="pre">1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clip</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/grav_lens/preprocess/filtering.html#CustomMinMaxScaler"><span class="viewcode-link"><span class="pre">[fuente]</span></span></a><a class="headerlink" href="#grav_lens.preprocess.filtering.CustomMinMaxScaler" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="grav_lens.preprocess.filtering.CustomMinMaxScaler.fit_scaler">
+<span class="sig-name descname"><span class="pre">fit_scaler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/grav_lens/preprocess/filtering.html#CustomMinMaxScaler.fit_scaler"><span class="viewcode-link"><span class="pre">[fuente]</span></span></a><a class="headerlink" href="#grav_lens.preprocess.filtering.CustomMinMaxScaler.fit_scaler" title="Link to this definition"></a></dt>
+<dd><p>Función para ajustar el MinMaxScaler a los datos de entrenamiento.</p>
+<p>Parámetros:
+- dataset: Un iterable o generador de datos que contiene las imágenes en lotes (batch_size, height, width, 1)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="grav_lens.preprocess.filtering.CustomMinMaxScaler.inverse_transform">
+<span class="sig-name descname"><span class="pre">inverse_transform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y_batch_scaled</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/grav_lens/preprocess/filtering.html#CustomMinMaxScaler.inverse_transform"><span class="viewcode-link"><span class="pre">[fuente]</span></span></a><a class="headerlink" href="#grav_lens.preprocess.filtering.CustomMinMaxScaler.inverse_transform" title="Link to this definition"></a></dt>
+<dd><p>Función para desescalar un batch de datos usando el scaler ajustado.</p>
+<p>Parámetros:
+- y_batch_scaled: Un batch normalizado de imágenes (batch_size, height, width, 1)</p>
+<p>Retorna:
+- El batch desescalado a los valores originales.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="grav_lens.preprocess.filtering.CustomMinMaxScaler.transform">
+<span class="sig-name descname"><span class="pre">transform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y_batch</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/grav_lens/preprocess/filtering.html#CustomMinMaxScaler.transform"><span class="viewcode-link"><span class="pre">[fuente]</span></span></a><a class="headerlink" href="#grav_lens.preprocess.filtering.CustomMinMaxScaler.transform" title="Link to this definition"></a></dt>
+<dd><p>Función para normalizar un batch de datos usando el scaler ajustado.</p>
+<p>Parámetros:
+- y_batch: Un batch de imágenes en forma de tensor (batch_size, height, width, 1)</p>
+<p>Retorna:
+- El batch normalizado.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="grav_lens.preprocess.filtering.apply_fourier_transform">
+<span class="sig-prename descclassname"><span class="pre">grav_lens.preprocess.filtering.</span></span><span class="sig-name descname"><span class="pre">apply_fourier_transform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/grav_lens/preprocess/filtering.html#apply_fourier_transform"><span class="viewcode-link"><span class="pre">[fuente]</span></span></a><a class="headerlink" href="#grav_lens.preprocess.filtering.apply_fourier_transform" title="Link to this definition"></a></dt>
+<dd><p>Aplica la Transformada de Fourier bidimensional a una imagen.</p>
+<dl class="simple">
+<dt>Parámetros:</dt><dd><p>image (numpy array): Imagen en formato numpy array (2D).</p>
+</dd>
+<dt>Retorna:</dt><dd><p>f_transform_shifted (numpy array): Transformada de Fourier desplazada con fftshift.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="grav_lens.preprocess.filtering.apply_highpass_filter">
+<span class="sig-prename descclassname"><span class="pre">grav_lens.preprocess.filtering.</span></span><span class="sig-name descname"><span class="pre">apply_highpass_filter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">f_transform</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cutoff</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/grav_lens/preprocess/filtering.html#apply_highpass_filter"><span class="viewcode-link"><span class="pre">[fuente]</span></span></a><a class="headerlink" href="#grav_lens.preprocess.filtering.apply_highpass_filter" title="Link to this definition"></a></dt>
+<dd><p>Aplica un filtro pasa altas (high-pass) a la Transformada de Fourier.</p>
+<dl class="simple">
+<dt>Parámetros:</dt><dd><p>f_transform (numpy array): Transformada de Fourier desplazada.
+cutoff (float): Frecuencia de corte para el filtro (entre 0 y 1, relativa al tamaño de la imagen).</p>
+</dd>
+<dt>Retorna:</dt><dd><p>highpass_filtered (numpy array): Transformada de Fourier filtrada con pasa altas.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="grav_lens.preprocess.filtering.apply_lowpass_filter">
+<span class="sig-prename descclassname"><span class="pre">grav_lens.preprocess.filtering.</span></span><span class="sig-name descname"><span class="pre">apply_lowpass_filter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">f_transform</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cutoff</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/grav_lens/preprocess/filtering.html#apply_lowpass_filter"><span class="viewcode-link"><span class="pre">[fuente]</span></span></a><a class="headerlink" href="#grav_lens.preprocess.filtering.apply_lowpass_filter" title="Link to this definition"></a></dt>
+<dd><p>Aplica un filtro pasa bajas (low-pass) a la Transformada de Fourier.</p>
+<dl class="simple">
+<dt>Parámetros:</dt><dd><p>f_transform (numpy array): Transformada de Fourier desplazada.
+cutoff (float): Frecuencia de corte para el filtro (entre 0 y 1, relativa al tamaño de la imagen).</p>
+</dd>
+<dt>Retorna:</dt><dd><p>lowpass_filtered (numpy array): Transformada de Fourier filtrada con pasa bajas.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="grav_lens.preprocess.filtering.inverse_fourier_transform">
+<span class="sig-prename descclassname"><span class="pre">grav_lens.preprocess.filtering.</span></span><span class="sig-name descname"><span class="pre">inverse_fourier_transform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">f_transform_shifted</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/grav_lens/preprocess/filtering.html#inverse_fourier_transform"><span class="viewcode-link"><span class="pre">[fuente]</span></span></a><a class="headerlink" href="#grav_lens.preprocess.filtering.inverse_fourier_transform" title="Link to this definition"></a></dt>
+<dd><p>Aplica la Transformada Inversa de Fourier a una imagen.</p>
+<dl class="simple">
+<dt>Parámetros:</dt><dd><p>f_transform_shifted (numpy array): Transformada de Fourier desplazada.</p>
+</dd>
+<dt>Retorna:</dt><dd><p>image_reconstructed (numpy array): Imagen reconstruida a partir de la transformada de Fourier.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="grav_lens.preprocess.filtering.process_batch_filters">
+<span class="sig-prename descclassname"><span class="pre">grav_lens.preprocess.filtering.</span></span><span class="sig-name descname"><span class="pre">process_batch_filters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y_batch</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cutoff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/grav_lens/preprocess/filtering.html#process_batch_filters"><span class="viewcode-link"><span class="pre">[fuente]</span></span></a><a class="headerlink" href="#grav_lens.preprocess.filtering.process_batch_filters" title="Link to this definition"></a></dt>
+<dd><p>Procesa un batch de imágenes para separar las componentes de baja y alta frecuencia.</p>
+<dl class="simple">
+<dt>Parámetros:</dt><dd><p>y_batch (numpy array): Batch de imágenes (batch_size, 128, 128, 1).
+threshold (float): Umbral para separar las frecuencias.</p>
+</dd>
+<dt>Retorna:</dt><dd><p>low_freq_batch (numpy array): Batch de imágenes de baja frecuencia.
+high_freq_batch (numpy array): Batch de imágenes de alta frecuencia.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="grav_lens.preprocess.filtering.process_image_with_filters">
+<span class="sig-prename descclassname"><span class="pre">grav_lens.preprocess.filtering.</span></span><span class="sig-name descname"><span class="pre">process_image_with_filters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cutoff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/grav_lens/preprocess/filtering.html#process_image_with_filters"><span class="viewcode-link"><span class="pre">[fuente]</span></span></a><a class="headerlink" href="#grav_lens.preprocess.filtering.process_image_with_filters" title="Link to this definition"></a></dt>
+<dd><p>Procesa una imagen para separar las componentes de baja y alta frecuencia usando filtros pasa bajas y pasa altas.</p>
+<dl class="simple">
+<dt>Parámetros:</dt><dd><p>image (numpy array): Imagen en formato numpy array (2D).
+cutoff (float): Frecuencia de corte para los filtros (entre 0 y 1, relativa al tamaño de la imagen).</p>
+</dd>
+<dt>Retorna:</dt><dd><p>low_freq_image (numpy array): Imagen de baja frecuencia.
+high_freq_image (numpy array): Imagen de alta frecuencia.</p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
-<section id="grav-lens-preprocess-gmm-module">
-<h2>grav_lens.preprocess.gmm module<a class="headerlink" href="#grav-lens-preprocess-gmm-module" title="Link to this heading"></a></h2>
+<section id="module-grav_lens.preprocess.gmm">
+<span id="grav-lens-preprocess-gmm-module"></span><h2>grav_lens.preprocess.gmm module<a class="headerlink" href="#module-grav_lens.preprocess.gmm" title="Link to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="grav_lens.preprocess.gmm.apply_threshold">
+<span class="sig-prename descclassname"><span class="pre">grav_lens.preprocess.gmm.</span></span><span class="sig-name descname"><span class="pre">apply_threshold</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mean_value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">std_value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/grav_lens/preprocess/gmm.html#apply_threshold"><span class="viewcode-link"><span class="pre">[fuente]</span></span></a><a class="headerlink" href="#grav_lens.preprocess.gmm.apply_threshold" title="Link to this definition"></a></dt>
+<dd><p>Aplica un umbral a la imagen basado en la media y la desviación estándar.</p>
+<dl class="simple">
+<dt>Parámetros:</dt><dd><p>image (numpy array): Imagen en formato numpy array.
+mean_value (float): Media de los valores de la imagen.
+std_value (float): Desviación estándar de los valores de la imagen.
+threshold (float): Factor de umbral para definir el rango de valores que se mantendrán.</p>
+</dd>
+<dt>Retorna:</dt><dd><p>image_thresholded (numpy array): Imagen con valores filtrados.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="grav_lens.preprocess.gmm.calculate_image_stats">
+<span class="sig-prename descclassname"><span class="pre">grav_lens.preprocess.gmm.</span></span><span class="sig-name descname"><span class="pre">calculate_image_stats</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/grav_lens/preprocess/gmm.html#calculate_image_stats"><span class="viewcode-link"><span class="pre">[fuente]</span></span></a><a class="headerlink" href="#grav_lens.preprocess.gmm.calculate_image_stats" title="Link to this definition"></a></dt>
+<dd><p>Calcula la media y la desviación estándar de la imagen.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="grav_lens.preprocess.gmm.gaussian_2d">
+<span class="sig-prename descclassname"><span class="pre">grav_lens.preprocess.gmm.</span></span><span class="sig-name descname"><span class="pre">gaussian_2d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mux</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">muy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma_x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma_y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/grav_lens/preprocess/gmm.html#gaussian_2d"><span class="viewcode-link"><span class="pre">[fuente]</span></span></a><a class="headerlink" href="#grav_lens.preprocess.gmm.gaussian_2d" title="Link to this definition"></a></dt>
+<dd><p>Genera una Gaussiana bidimensional.</p>
+<dl class="simple">
+<dt>Parámetros:</dt><dd><p>x, y (numpy array): Coordenadas de la cuadrícula.
+mux, muy (float): Medias en x e y.
+sigma_x, sigma_y (float): Desviaciones estándar en x e y.
+weight (float): Peso de la gaussiana.</p>
+</dd>
+<dt>Retorna:</dt><dd><p>(numpy array): Imagen generada de la gaussiana.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="grav_lens.preprocess.gmm.generate_points_from_image">
+<span class="sig-prename descclassname"><span class="pre">grav_lens.preprocess.gmm.</span></span><span class="sig-name descname"><span class="pre">generate_points_from_image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/grav_lens/preprocess/gmm.html#generate_points_from_image"><span class="viewcode-link"><span class="pre">[fuente]</span></span></a><a class="headerlink" href="#grav_lens.preprocess.gmm.generate_points_from_image" title="Link to this definition"></a></dt>
+<dd><p>Genera una cantidad fija de puntos (x, y) a partir de una imagen, donde la cantidad de puntos es proporcional a la intensidad del pixel.</p>
+<dl class="simple">
+<dt>Parámetros:</dt><dd><p>image (numpy array): Imagen en formato numpy array (2D).
+n_samples (int): Número total de puntos a generar.</p>
+</dd>
+<dt>Retorna:</dt><dd><p>points (numpy array): Array de coordenadas (x, y) generadas a partir de los valores de los píxeles.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="grav_lens.preprocess.gmm.gmm_batch_vectors">
+<span class="sig-prename descclassname"><span class="pre">grav_lens.preprocess.gmm.</span></span><span class="sig-name descname"><span class="pre">gmm_batch_vectors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_gaussians_positive</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">30</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_gaussians_negative</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/grav_lens/preprocess/gmm.html#gmm_batch_vectors"><span class="viewcode-link"><span class="pre">[fuente]</span></span></a><a class="headerlink" href="#grav_lens.preprocess.gmm.gmm_batch_vectors" title="Link to this definition"></a></dt>
+<dd><p>Aplica modelos de mezclas gaussianas (GMM) a un batch de imágenes, generando vectores de medias, desviaciones estándar y pesos para cada imagen.</p>
+<dl class="simple">
+<dt>Parámetros:</dt><dd><p>batch (numpy array): Batch de imágenes a procesar (batch_size, altura, anchura, 1).
+n_gaussians_positive (int, opcional): Número de componentes gaussianas positivas (por defecto 30).
+n_gaussians_negative (int, opcional): Número de componentes gaussianas negativas (por defecto 10).
+threshold (float, opcional): Umbral para separar las frecuencias (por defecto 2).</p>
+</dd>
+<dt>Retorna:</dt><dd><dl class="simple">
+<dt>combined_batch (numpy array): Batch de vectores combinados de medias, desviaciones estándar y pesos de cada imagen,</dt><dd><p>con shape (batch_size, n_gaussianas, 5). El vector tiene el formato 
+[mean_x, mean_y, std_x, std_y, weight] para cada gaussiana.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="grav_lens.preprocess.gmm.gmm_vectors">
+<span class="sig-prename descclassname"><span class="pre">grav_lens.preprocess.gmm.</span></span><span class="sig-name descname"><span class="pre">gmm_vectors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mean</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">std</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_gaussians_positive</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_gaussians_negative</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/grav_lens/preprocess/gmm.html#gmm_vectors"><span class="viewcode-link"><span class="pre">[fuente]</span></span></a><a class="headerlink" href="#grav_lens.preprocess.gmm.gmm_vectors" title="Link to this definition"></a></dt>
+<dd><p>Aplica modelos de mezclas gaussianas (GMM) a una imagen procesada por umbralización, generando vectores de medias, covarianzas y pesos.</p>
+<dl class="simple">
+<dt>Parámetros:</dt><dd><p>img (numpy array): Imagen a procesar (2D).
+mean (float): Media utilizada para la normalización de la imagen.
+std (float): Desviación estándar utilizada para la normalización de la imagen.
+threshold (float, opcional): Umbral para separar las frecuencias (por defecto 3).
+n_gaussians_positive (int, opcional): Número de componentes gaussianas positivas (por defecto 20).
+n_gaussians_negative (int, opcional): Número de componentes gaussianas negativas (por defecto 10).</p>
+</dd>
+<dt>Retorna:</dt><dd><p>combined_means (numpy array): Vectores de medias combinadas de los GMM positivo y negativo.
+combined_covariances (numpy array): Matriz de covarianzas combinadas de los GMM positivo y negativo.
+combined_weights (numpy array): Pesos combinados de los GMM positivo y negativo.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="grav_lens.preprocess.gmm.plot_comparison">
+<span class="sig-prename descclassname"><span class="pre">grav_lens.preprocess.gmm.</span></span><span class="sig-name descname"><span class="pre">plot_comparison</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">original_image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reconstructed_image</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/grav_lens/preprocess/gmm.html#plot_comparison"><span class="viewcode-link"><span class="pre">[fuente]</span></span></a><a class="headerlink" href="#grav_lens.preprocess.gmm.plot_comparison" title="Link to this definition"></a></dt>
+<dd><p>Grafica la imagen original y la imagen reconstruida una al lado de la otra.</p>
+<dl class="simple">
+<dt>Parámetros:</dt><dd><p>original_image (numpy array): Imagen original.
+reconstructed_image (numpy array): Imagen reconstruida.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="grav_lens.preprocess.gmm.reconstruct_image_from_gmm">
+<span class="sig-prename descclassname"><span class="pre">grav_lens.preprocess.gmm.</span></span><span class="sig-name descname"><span class="pre">reconstruct_image_from_gmm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image_shape</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">means</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">covariances</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weights</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/grav_lens/preprocess/gmm.html#reconstruct_image_from_gmm"><span class="viewcode-link"><span class="pre">[fuente]</span></span></a><a class="headerlink" href="#grav_lens.preprocess.gmm.reconstruct_image_from_gmm" title="Link to this definition"></a></dt>
+<dd><p>Reconstruye la imagen a partir de los parámetros del GMM.</p>
+<dl class="simple">
+<dt>Parámetros:</dt><dd><p>image_shape (tuple): La forma de la imagen (ancho, alto).
+means (numpy array): Medias de las gaussianas.
+covariances (numpy array): Covarianzas de las gaussianas.
+weights (numpy array): Pesos de mezcla de las gaussianas.</p>
+</dd>
+<dt>Retorna:</dt><dd><p>reconstructed_image (numpy array): La imagen reconstruida.</p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
-<section id="module-contents">
-<h2>Module contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
+<section id="module-grav_lens.preprocess">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-grav_lens.preprocess" title="Link to this heading"></a></h2>
 </section>
 </section>
 

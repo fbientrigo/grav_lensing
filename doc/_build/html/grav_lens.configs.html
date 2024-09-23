@@ -58,7 +58,7 @@
 <li class="toctree-l4"><a class="reference internal" href="grav_lens.utils.html">grav_lens.utils package</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="grav_lens.html#module-contents">Module contents</a></li>
+<li class="toctree-l3"><a class="reference internal" href="grav_lens.html#module-grav_lens">Module contents</a></li>
 </ul>
 </li>
 </ul>
@@ -96,11 +96,50 @@
 <section id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
 </section>
-<section id="grav-lens-configs-paths-module">
-<h2>grav_lens.configs.paths module<a class="headerlink" href="#grav-lens-configs-paths-module" title="Link to this heading"></a></h2>
+<section id="module-grav_lens.configs.paths">
+<span id="grav-lens-configs-paths-module"></span><h2>grav_lens.configs.paths module<a class="headerlink" href="#module-grav_lens.configs.paths" title="Link to this heading"></a></h2>
+<p>Se encarga del managing de los paths para facilitar la modelo</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="grav_lens.configs.paths.get_data_directory">
+<span class="sig-prename descclassname"><span class="pre">grav_lens.configs.paths.</span></span><span class="sig-name descname"><span class="pre">get_data_directory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'1'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">home</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'C:\\Users\\fbien.DESKTOP-6FMEAR7\\Desktop\\grav_lensing\\doc'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_attempts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/grav_lens/configs/paths.html#get_data_directory"><span class="viewcode-link"><span class="pre">[fuente]</span></span></a><a class="headerlink" href="#grav_lens.configs.paths.get_data_directory" title="Link to this definition"></a></dt>
+<dd><p>Busca un directorio de datos específico, intentando diferentes índices numéricos si el directorio
+no existe.</p>
+<p>Esta función busca una carpeta de datos en el directorio especificado por “home” y “data_index”.
+Si no encuentra la carpeta con el “data_index” proporcionado, intenta con otros números hasta 
+un máximo de “max_attempts”.</p>
+<dl>
+<dt>Parameters:</dt><dd><p>data_index (str, optional): El índice de datos inicial a buscar. Por defecto es DATA_INDEX.
+home (str, optional): El directorio principal donde se encuentran los datos. Por defecto es HOME.
+max_attempts (int, optional): El número máximo de intentos para encontrar un directorio válido. Por defecto es 10.</p>
+</dd>
+<dt>Returns:</dt><dd><p>tuple: Rutas a los directorios de los datos “EPSILON” y “KAPPA”.</p>
+</dd>
+<dt>Raises:</dt><dd><p>FileNotFoundError: Si no se encuentra un directorio de datos válido después de “max_attempts” intentos.</p>
+</dd>
+<dt>Examples:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">x_data</span><span class="p">,</span> <span class="n">y_data</span> <span class="o">=</span> <span class="n">get_data_directory</span><span class="p">(</span><span class="n">data_index</span><span class="o">=</span><span class="s1">&#39;1&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="grav_lens.configs.paths.get_datasets_paths_from_index">
+<span class="sig-prename descclassname"><span class="pre">grav_lens.configs.paths.</span></span><span class="sig-name descname"><span class="pre">get_datasets_paths_from_index</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'1'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_files</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">home</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'C:\\Users\\fbien.DESKTOP-6FMEAR7\\Desktop\\grav_lensing\\doc'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/grav_lens/configs/paths.html#get_datasets_paths_from_index"><span class="viewcode-link"><span class="pre">[fuente]</span></span></a><a class="headerlink" href="#grav_lens.configs.paths.get_datasets_paths_from_index" title="Link to this definition"></a></dt>
+<dd><p>Obtiene dos valores, uno es la lista de nombres correspondientes a X, las features
+y el otro es a Y, la distribucion</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="grav_lens.configs.paths.list_files_from_directory">
+<span class="sig-prename descclassname"><span class="pre">grav_lens.configs.paths.</span></span><span class="sig-name descname"><span class="pre">list_files_from_directory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">directory</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_files</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/grav_lens/configs/paths.html#list_files_from_directory"><span class="viewcode-link"><span class="pre">[fuente]</span></span></a><a class="headerlink" href="#grav_lens.configs.paths.list_files_from_directory" title="Link to this definition"></a></dt>
+<dd><p>Lista los primeros <cite>max_files</cite> archivos en el directorio <cite>directory</cite>.
+Los nombres de los archivos se almacenan en la lista global <cite>file_names</cite>.</p>
+</dd></dl>
+
 </section>
-<section id="module-contents">
-<h2>Module contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
+<section id="module-grav_lens.configs">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-grav_lens.configs" title="Link to this heading"></a></h2>
 </section>
 </section>
 

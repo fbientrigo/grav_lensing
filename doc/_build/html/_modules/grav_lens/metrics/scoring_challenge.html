@@ -86,7 +86,6 @@
 <span class="k">def</span> <span class="nf">WMAPE</span><span class="p">(</span><span class="n">T</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">P</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">delta</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">constant</span><span class="p">(</span><span class="mf">1e-5</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">)):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Calcula el Error Medio Absoluto Porcentual Ponderado (WMAPE) entre dos tensores.</span>
-
 <span class="sd">    El WMAPE es una métrica de error que tiene en cuenta la magnitud de las</span>
 <span class="sd">    observaciones reales al ponderar las diferencias absolutas entre las predicciones</span>
 <span class="sd">    y los valores reales. Esta métrica es útil en escenarios donde los valores reales</span>
@@ -96,11 +95,11 @@
 <span class="sd">        T (tf.Tensor): Tensor que representa los valores reales u observados.</span>
 <span class="sd">        P (tf.Tensor): Tensor que representa los valores predichos.</span>
 <span class="sd">        delta (tf.Tensor, optional): Un pequeño valor constante para evitar divisiones por cero. </span>
-<span class="sd">                                     Por defecto es 1e-5.</span>
-
+<span class="sd">                                        Por defecto es 1e-5.</span>
+<span class="sd">    </span>
 <span class="sd">    Returns:</span>
 <span class="sd">        tf.Tensor: Un tensor escalar que representa el WMAPE calculado.</span>
-
+<span class="sd">    </span>
 <span class="sd">    Examples:</span>
 <span class="sd">        &gt;&gt;&gt; T = tf.constant([10.0, 0.0, 5.0])</span>
 <span class="sd">        &gt;&gt;&gt; P = tf.constant([9.0, 1.0, 5.0])</span>
