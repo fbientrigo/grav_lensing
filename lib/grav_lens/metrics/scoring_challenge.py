@@ -20,7 +20,7 @@ def WMAPE(T: tf.Tensor, P: tf.Tensor, delta=tf.constant(1e-5, dtype=tf.float32))
         T (tf.Tensor): Tensor que representa los valores reales u observados.
         P (tf.Tensor): Tensor que representa los valores predichos.
         delta (tf.Tensor, optional): Un pequeño valor constante para evitar divisiones por cero. 
-                                     Por defecto es 1e-5.
+                                        Por defecto es 1e-5.
 
     Returns:
         tf.Tensor: Un tensor escalar que representa el WMAPE calculado.
