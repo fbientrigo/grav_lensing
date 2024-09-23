@@ -20,10 +20,10 @@ jobs:
           pip install sphinx sphinx_rtd_theme myst_parser
       - name: Install grav_lens
         run: |
-          pip install ./src 
+          pip install ./src
       - name: Sphinx build
         run: |
-          sphinx-build doc doc/_build/html/
+          sphinx-build doc doc/_build/
   
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
