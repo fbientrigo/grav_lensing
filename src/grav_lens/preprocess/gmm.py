@@ -3,7 +3,20 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.mixture import GaussianMixture
 
+
+
 # ----------- Funciones Basicas de las que dependen las otras ----------------
+import cv2
+
+def downscale_image(image, scale=0.5):
+    """
+    Escala la imagen a la mitad de su resolución.
+    """
+    height, width = image.shape[:2]
+    new_dim = (int(width * scale), int(height * scale))
+    return cv2.resize(image, new_dim, interpolation=cv2.INTER_AREA)
+
+
 def calculate_image_stats(image):
     """
     Calcula la media y la desviación estándar de la imagen.
@@ -36,16 +49,18 @@ def apply_threshold(image, mean_value, std_value, threshold=1.0):
     return image_thresholded_positive, image_thresholded_negative
 
 
-
-
-def generate_points_from_image(image, n_samples=100):
+def generate_points_from_image(image, n_samples=100, density_threshold=0.01, density_scaling=True):
     """
-    Genera una cantidad fija de puntos (x, y) a partir de una imagen, donde la cantidad de puntos es proporcional a la intensidad del pixel.
-    
+    Genera una cantidad fija de puntos (x, y) a partir de una imagen, donde la cantidad de puntos es proporcional a la
+    intensidad del pixel y los puntos de mayor densidad tienen más probabilidades de ser seleccionados.
+
     Parámetros:
         image (numpy array): Imagen en formato numpy array (2D).
         n_samples (int): Número total de puntos a generar.
-        
+        density_threshold (float, opcional): Umbral para ignorar píxeles de baja densidad (por defecto 0.01).
+        density_scaling (bool, opcional): Si True, se escalarán las intensidades de los píxeles para aumentar la probabilidad 
+                                          de seleccionar puntos más densos (por defecto True).
+
     Retorna:
         points (numpy array): Array de coordenadas (x, y) generadas a partir de los valores de los píxeles.
     """
@@ -53,23 +68,35 @@ def generate_points_from_image(image, n_samples=100):
     if np.sum(image) == 0:
         # Si está vacía, devolver una lista vacía de puntos
         return np.array([])
-    
+
     # Aplanar la imagen para simplificar el muestreo
     flattened_image = image.flatten()
-    
+
+    # Aplicar el umbral para ignorar píxeles de baja densidad
+    flattened_image = np.where(flattened_image >= density_threshold, flattened_image, 0)
+
+    # Verificar si la imagen sigue vacía después del umbral
+    if np.sum(flattened_image) == 0:
+        return np.array([])
+
+    # Si se habilita el escalado por densidad, aumentar la importancia de los píxeles con más densidad
+    if density_scaling:
+        flattened_image = flattened_image ** 2  # Incrementar la importancia de los píxeles más densos
+
     # Normalizar la imagen para que sus valores sumen 1 (esto crea una distribución de probabilidad)
     probabilities = flattened_image / np.sum(flattened_image)
-    
+
     # Generar los índices de los píxeles con muestreo ponderado según las intensidades
     chosen_indices = np.random.choice(len(flattened_image), size=n_samples, p=probabilities)
-    
+
     # Convertir los índices planos en coordenadas (x, y)
     x_coords, y_coords = np.unravel_index(chosen_indices, image.shape)
-    
+
     # Combinar las coordenadas en una lista de puntos (x, y)
     points = np.vstack((x_coords, y_coords)).T
-    
+
     return points
+
 
 def gaussian_2d(x, y, mux, muy, sigma_x, sigma_y, weight):
     """
@@ -182,64 +209,122 @@ def gmm_vectors(img, mean, std, threshold=3, n_gaussians_positive=20, n_gaussian
 
     return combined_means, combined_covariances, combined_weights
 
-def gmm_batch_vectors(batch, n_gaussians_positive=30, n_gaussians_negative=10, threshold=2):
-    """
-    Aplica modelos de mezclas gaussianas (GMM) a un batch de imágenes, generando vectores de medias, desviaciones estándar y pesos para cada imagen.
+import cv2
 
+# Nueva función para escalar las gaussianas
+def scale_gaussian_parameters(means, covariances, scale):
+    """
+    Escala los parámetros de las gaussianas (medias y covarianzas) para ajustar la resolución original.
+    
     Parámetros:
-        batch (numpy array): Batch de imágenes a procesar (batch_size, altura, anchura, 1).
-        n_gaussians_positive (int, opcional): Número de componentes gaussianas positivas (por defecto 30).
-        n_gaussians_negative (int, opcional): Número de componentes gaussianas negativas (por defecto 10).
-        threshold (float, opcional): Umbral para separar las frecuencias (por defecto 2).
+        means (numpy array): Medias (x, y) de las gaussianas.
+        covariances (numpy array): Covarianzas (matriz 2x2) de las gaussianas.
+        scale (float): Factor de escalado inverso para volver a la resolución original.
     
     Retorna:
-        combined_batch (numpy array): Batch de vectores combinados de medias, desviaciones estándar y pesos de cada imagen,
-                                      con shape (batch_size, n_gaussianas, 5). El vector tiene el formato 
-                                      [mean_x, mean_y, std_x, std_y, weight] para cada gaussiana.
+        scaled_means (numpy array): Medias escaladas.
+        scaled_covariances (numpy array): Covarianzas escaladas.
     """
+    scaled_means = means / scale  # Escalar las medias
+    scaled_covariances = covariances / (scale ** 2)  # Escalar las covarianzas (cuadrado del factor de escala)
+    return scaled_means, scaled_covariances
 
+# Función para aplicar el GMM en imágenes escaladas
+def gmm_batch_vectors(batch, n_gaussians_positive=30, n_gaussians_negative=10, threshold=2, n_points=500, 
+                      scale=0.5, density_threshold=0.05, density_scaling=True,
+                      pos_reg_covar=1e-6, pos_tol=1e-3, neg_reg_covar=1e-6, neg_tol=1e-3):
+    """
+    Aplica modelos de mezclas gaussianas (GMM) a un batch de imágenes escaladas, generando vectores de medias, desviaciones estándar y pesos.
+    Luego, reescala las gaussianas para que correspondan a la resolución original.
+
+    Esta función primero reduce la resolución de las imágenes de entrada, aplica un modelo GMM para extraer las componentes gaussianas
+    positivas y negativas, y finalmente reescala las gaussianas a la resolución original. Se usa para aproximar las distribuciones
+    de alta y baja frecuencia en las imágenes.
+
+    Parámetros:
+        batch (numpy.ndarray): Batch de imágenes a procesar con shape (batch_size, altura, anchura, 1).
+        n_gaussians_positive (int, opcional): Número de componentes gaussianas positivas (por defecto 30).
+        n_gaussians_negative (int, opcional): Número de componentes gaussianas negativas (por defecto 10).
+        threshold (float, opcional): Umbral para separar las frecuencias. Define qué partes de la imagen se consideran "positivas" o "negativas" (por defecto 2).
+        n_points (int, opcional): Número de puntos a generar para el modelo GMM a partir de la imagen umbralizada (por defecto 500).
+        scale (float, opcional): Factor de escalado de la imagen para reducir la resolución (por defecto 0.5).
+        pos_reg_covar (float, opcional): Regularización aplicada a las covariancias de las gaussianas positivas (por defecto 1e-3).
+        pos_tol (float, opcional): Tolerancia para la convergencia del GMM positivo (por defecto 1e-5).
+        neg_reg_covar (float, opcional): Regularización aplicada a las covariancias de las gaussianas negativas (por defecto 1e-3).
+        neg_tol (float, opcional): Tolerancia para la convergencia del GMM negativo (por defecto 1e-5).
+
+    Retorna:
+        numpy.ndarray: Batch de vectores combinados con shape (batch_size, n_gaussianas, 5). Cada vector tiene el formato 
+                       [mean_x, mean_y, std_x, std_y, weight], donde mean_x y mean_y son las medias de la gaussiana,
+                       std_x y std_y son las desviaciones estándar, y weight es el peso de la gaussiana.
+
+    Notas:
+        - Se aplica un escalado a las imágenes antes de calcular las gaussianas, lo que reduce la cantidad de detalles procesados.
+        - Después de aplicar GMM, los parámetros gaussianos se reescalan a la resolución original.
+        - Esta función es útil para capturar tanto las frecuencias altas como bajas de la imagen usando GMM en distintas resoluciones.
+
+    Ejemplo:
+        >>> batch = np.random.random((10, 128, 128, 1))
+        >>> result = gmm_batch_vectors(batch, n_gaussians_positive=20, n_gaussians_negative=5, scale=0.5)
+        >>> result.shape
+        (10, 25, 5)
+    """
     batch_size = batch.shape[0]
     combined_batch = []
-    mean, std = calculate_image_stats(batch)  
+    original_shape = batch.shape[1:3]  # Obtener la forma original (altura, anchura)
+    mean, std = calculate_image_stats(batch)
 
     for i in range(batch_size):
         img = batch[i, :, :, 0]  # Tomamos cada imagen del batch
-  
-        # Aplicar umbrales y calcular GMMs
-        img_clear_positive, img_clear_negative = apply_threshold(img, mean, std, threshold)
+
+        # Escalar la imagen
+        img_scaled = downscale_image(img, scale=scale)
+
+        # Aplicar umbrales y calcular GMMs en la imagen escalada
+        img_clear_positive, img_clear_negative = apply_threshold(img_scaled, mean, std, threshold)
 
         # Verificar si hay puntos en la parte positiva
-        points = generate_points_from_image(img_clear_positive)
+        points = generate_points_from_image(img_clear_positive, n_samples=n_points,  density_threshold=density_threshold, density_scaling=density_scaling)
         if len(points) == 0:
             means = np.zeros((n_gaussians_positive, 2))
             covariances = np.eye(2).reshape((1, 2, 2)).repeat(n_gaussians_positive, axis=0)
             weights = np.zeros(n_gaussians_positive)
         else:
-            gmm = GaussianMixture(n_components=n_gaussians_positive, covariance_type='full').fit(points)
+            gmm = GaussianMixture(n_components=n_gaussians_positive, covariance_type='full', 
+                                  reg_covar=pos_reg_covar, tol=pos_tol).fit(points)
             means = gmm.means_
             covariances = gmm.covariances_
             weights = gmm.weights_
 
-        # Verificar si hay puntos en la parte negativa
-        negative_points = generate_points_from_image(-img_clear_negative)
-        if len(negative_points) == 0:
-            means_negative = np.zeros((n_gaussians_negative, 2))
-            covariances_negative = np.eye(2).reshape((1, 2, 2)).repeat(n_gaussians_negative, axis=0)
-            weights_negative = np.zeros(n_gaussians_negative)
-        else:
-            gmm_negative = GaussianMixture(n_components=n_gaussians_negative, covariance_type='full').fit(negative_points)
-            means_negative = gmm_negative.means_
-            covariances_negative = gmm_negative.covariances_
-            weights_negative = -gmm_negative.weights_
+        combined_means = means
+        combined_covariances = covariances
+        combined_weights = weights
 
-        # Concatenar ambos resultados
-        combined_means = np.vstack([means, means_negative])
-        combined_covariances = np.vstack([covariances, covariances_negative])
-        combined_weights = np.hstack([weights, weights_negative])
+        # Solo calcular la parte negativa si n_gaussians_negative > 0
+        if n_gaussians_negative > 0:
+            negative_points = generate_points_from_image(-img_clear_negative)
+            if len(negative_points) == 0:
+                means_negative = np.zeros((n_gaussians_negative, 2))
+                covariances_negative = np.eye(2).reshape((1, 2, 2)).repeat(n_gaussians_negative, axis=0)
+                weights_negative = np.zeros(n_gaussians_negative)
+            else:
+                gmm_negative = GaussianMixture(n_components=n_gaussians_negative, covariance_type='full',
+                                               reg_covar=neg_reg_covar, tol=neg_tol).fit(negative_points)
+                means_negative = gmm_negative.means_
+                covariances_negative = gmm_negative.covariances_
+                weights_negative = -gmm_negative.weights_
+
+            # Concatenar los resultados de las gaussianas negativas
+            combined_means = np.vstack([combined_means, means_negative])
+            combined_covariances = np.vstack([combined_covariances, covariances_negative])
+            combined_weights = np.hstack([combined_weights, weights_negative])
+
+        # Reescalar las gaussianas a la resolución original ---------------------
+        combined_means, combined_covariances = scale_gaussian_parameters(combined_means, combined_covariances, scale)
 
         # Extraer las desviaciones estándar (componentes diagonales de las covariancias)
-        std_x = np.sqrt(np.maximum(combined_covariances[:, 0, 0], 1e-6))  # Desviación estándar en el eje x
-        std_y = np.sqrt(np.maximum(combined_covariances[:, 1, 1], 1e-6))  # Desviación estándar en el eje y
+        std_x = np.maximum(np.sqrt(combined_covariances[:, 0, 0]), 1e-12)  # Desviación estándar en el eje x
+        std_y = np.maximum(np.sqrt(combined_covariances[:, 1, 1]), 1e-12)  # Desviación estándar en el eje y
 
         # Concatenar todos los valores relevantes en un vector (mean_x, mean_y, std_x, std_y, weight)
         combined_vectors = np.column_stack([combined_means[:, 0],  # mean_x
@@ -252,5 +337,5 @@ def gmm_batch_vectors(batch, n_gaussians_positive=30, n_gaussians_negative=10, t
 
     # Convertir la lista en un numpy array con shape (batch_size, n_gaussianas, 5)
     combined_batch = np.array(combined_batch)
-    
+
     return combined_batch
