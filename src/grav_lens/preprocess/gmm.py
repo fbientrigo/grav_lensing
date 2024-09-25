@@ -339,3 +339,81 @@ def gmm_batch_vectors(batch, n_gaussians_positive=30, n_gaussians_negative=10, t
     combined_batch = np.array(combined_batch)
 
     return combined_batch
+
+# -------------- reconstruction ------------------
+
+# Función para reconstruir las imágenes de baja frecuencia a partir de los coeficientes PCA
+def reconstruct_lowfreq_from_pca(principal_components, batch_size):
+    """
+    Reconstruye las imágenes de baja frecuencia a partir de los coeficientes PCA.
+
+    Parámetros:
+        principal_components (numpy array): Coeficientes de PCA con shape (batch, n_components).
+        batch_size (int): El tamaño del batch.
+    
+    Retorna:
+        lowfreq_images (numpy array): Imágenes de baja frecuencia reconstruidas con shape (batch, 128, 128, 1).
+    """
+    # Inverso del transformado PCA
+    low_freq_vstack = ipca_low.inverse_transform(principal_components)
+    
+    # Convertir de vstack (batch * 128 * 128) a forma (batch, 128, 128, 1)
+    lowfreq_images = low_freq_vstack.reshape(batch_size, 128, 128, 1)
+    
+    return lowfreq_images
+
+# Función para reconstruir imágenes de alta frecuencia en batch a partir de las gaussianas
+def reconstruct_highfreq_from_gmm(gaussians, batch_size, image_shape=(128, 128)):
+    """
+    Reconstruye las imágenes de alta frecuencia a partir de los parámetros del GMM para todo el batch.
+
+    Parámetros:
+        gaussians (numpy array): Parámetros del GMM de shape (batch, n_gaussians, 5).
+        batch_size (int): Tamaño del batch.
+        image_shape (tuple): La forma de la imagen de salida (ancho, alto), por defecto (128, 128).
+
+    Retorna:
+        highfreq_images (numpy array): Imágenes de alta frecuencia reconstruidas con shape (batch, 128, 128, 1).
+    """
+    highfreq_images = []
+    
+    for i in range(batch_size):
+        # Obtener los parámetros de las gaussianas para esta imagen
+        means = gaussians[i, :, :2]
+        covariances = np.array([[[g[2]**2, 0], [0, g[3]**2]] for g in gaussians[i]])  # Construir la matriz de covarianzas a partir de std
+        weights = gaussians[i, :, 4]
+
+        # Reconstruir la imagen desde los parámetros del GMM
+        reconstructed_image = reconstruct_image_from_gmm(image_shape, means, covariances, weights)
+        
+        # Añadir al batch
+        highfreq_images.append(reconstructed_image.reshape(image_shape[0], image_shape[1], 1))  # Añadir canal de color
+    
+    return np.array(highfreq_images)
+
+# Función para reconstruir el batch completo sumando ambas frecuencias
+def reconstruct_batch_images(principal_components, gaussians, batch_size, image_shape=(128, 128)):
+    """
+    Reconstruye el batch completo de imágenes sumando las componentes de baja y alta frecuencia.
+
+    Parámetros:
+        principal_components (numpy array): Coeficientes de PCA de baja frecuencia con shape (batch, n_components).
+        gaussians (numpy array): Parámetros del GMM de alta frecuencia de shape (batch, n_gaussians, 5).
+        batch_size (int): Tamaño del batch.
+        image_shape (tuple): La forma de la imagen de salida (ancho, alto), por defecto (128, 128).
+
+    Retorna:
+        batch_images (numpy array): Batch de imágenes reconstruidas con shape (batch, 128, 128, 1).
+    """
+    # Reconstruir la parte de baja frecuencia
+    lowfreq_images = reconstruct_lowfreq_from_pca(principal_components, batch_size)
+    
+    # Reconstruir la parte de alta frecuencia
+    highfreq_images = reconstruct_highfreq_from_gmm(gaussians, batch_size, image_shape)
+    
+    # Sumar las dos componentes para obtener las imágenes originales
+    batch_images = lowfreq_images + highfreq_images
+    
+    return batch_images
+
+
