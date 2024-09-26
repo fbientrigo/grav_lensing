@@ -343,7 +343,7 @@ def gmm_batch_vectors(batch, n_gaussians_positive=30, n_gaussians_negative=10, t
 # -------------- reconstruction ------------------
 
 # Función para reconstruir las imágenes de baja frecuencia a partir de los coeficientes PCA
-def reconstruct_lowfreq_from_pca(principal_components, batch_size):
+def reconstruct_lowfreq_from_pca(principal_components, batch_size, ipca_low):
     """
     Reconstruye las imágenes de baja frecuencia a partir de los coeficientes PCA.
 
@@ -392,7 +392,7 @@ def reconstruct_highfreq_from_gmm(gaussians, batch_size, image_shape=(128, 128))
     return np.array(highfreq_images)
 
 # Función para reconstruir el batch completo sumando ambas frecuencias
-def reconstruct_batch_images(principal_components, gaussians, batch_size, image_shape=(128, 128)):
+def reconstruct_batch_images(principal_components, gaussians, batch_size, ipca_low, image_shape=(128, 128)):
     """
     Reconstruye el batch completo de imágenes sumando las componentes de baja y alta frecuencia.
 
@@ -406,7 +406,7 @@ def reconstruct_batch_images(principal_components, gaussians, batch_size, image_
         batch_images (numpy array): Batch de imágenes reconstruidas con shape (batch, 128, 128, 1).
     """
     # Reconstruir la parte de baja frecuencia
-    lowfreq_images = reconstruct_lowfreq_from_pca(principal_components, batch_size)
+    lowfreq_images = reconstruct_lowfreq_from_pca(principal_components, batch_size, ipca_low)
     
     # Reconstruir la parte de alta frecuencia
     highfreq_images = reconstruct_highfreq_from_gmm(gaussians, batch_size, image_shape)
