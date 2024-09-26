@@ -235,26 +235,27 @@ def gmm_batch_vectors(batch, n_gaussians_positive=30, n_gaussians_negative=10, t
                       pos_reg_covar=1e-6, pos_tol=1e-3, neg_reg_covar=1e-6, neg_tol=1e-3):
     """
     Aplica modelos de mezclas gaussianas (GMM) a un batch de imágenes escaladas, generando vectores de medias, desviaciones estándar y pesos.
-    Luego, reescala las gaussianas para que correspondan a la resolución original.
+    Luego, reescala las gaussianas para que correspondan a la resolución original y las ordena por la magnitud de sus pesos.
+
 
     Esta función primero reduce la resolución de las imágenes de entrada, aplica un modelo GMM para extraer las componentes gaussianas
     positivas y negativas, y finalmente reescala las gaussianas a la resolución original. Se usa para aproximar las distribuciones
     de alta y baja frecuencia en las imágenes.
 
     Parámetros:
-        batch (numpy.ndarray): Batch de imágenes a procesar con shape (batch_size, altura, anchura, 1).
-        n_gaussians_positive (int, opcional): Número de componentes gaussianas positivas (por defecto 30).
-        n_gaussians_negative (int, opcional): Número de componentes gaussianas negativas (por defecto 10).
-        threshold (float, opcional): Umbral para separar las frecuencias. Define qué partes de la imagen se consideran "positivas" o "negativas" (por defecto 2).
-        n_points (int, opcional): Número de puntos a generar para el modelo GMM a partir de la imagen umbralizada (por defecto 500).
-        scale (float, opcional): Factor de escalado de la imagen para reducir la resolución (por defecto 0.5).
-        pos_reg_covar (float, opcional): Regularización aplicada a las covariancias de las gaussianas positivas (por defecto 1e-3).
-        pos_tol (float, opcional): Tolerancia para la convergencia del GMM positivo (por defecto 1e-5).
-        neg_reg_covar (float, opcional): Regularización aplicada a las covariancias de las gaussianas negativas (por defecto 1e-3).
-        neg_tol (float, opcional): Tolerancia para la convergencia del GMM negativo (por defecto 1e-5).
+        batch (numpy.ndarray):  Batch de imágenes a procesar con shape (batch_size, altura, anchura, 1).
+        n_gaussians_positive (int, opcional):   Número de componentes gaussianas positivas (por defecto 30).
+        n_gaussians_negative (int, opcional):   Número de componentes gaussianas negativas (por defecto 10).
+        threshold (float, opcional):    Umbral para separar las frecuencias. Define qué partes de la imagen se consideran "positivas" o "negativas" (por defecto 2).
+        n_points (int, opcional):   Número de puntos a generar para el modelo GMM a partir de la imagen umbralizada (por defecto 500).
+        scale (float, opcional):    Factor de escalado de la imagen para reducir la resolución (por defecto 0.5).
+        pos_reg_covar (float, opcional):    Regularización aplicada a las covariancias de las gaussianas positivas (por defecto 1e-3).
+        pos_tol (float, opcional):  Tolerancia para la convergencia del GMM positivo (por defecto 1e-5).
+        neg_reg_covar (float, opcional):    Regularización aplicada a las covariancias de las gaussianas negativas (por defecto 1e-3).
+        neg_tol (float, opcional):  Tolerancia para la convergencia del GMM negativo (por defecto 1e-5).
 
     Retorna:
-        numpy.ndarray: Batch de vectores combinados con shape (batch_size, n_gaussianas, 5). Cada vector tiene el formato 
+        numpy.ndarray:  Batch de vectores combinados con shape (batch_size, n_gaussianas, 5). Cada vector tiene el formato 
                        [mean_x, mean_y, std_x, std_y, weight], donde mean_x y mean_y son las medias de la gaussiana,
                        std_x y std_y son las desviaciones estándar, y weight es el peso de la gaussiana.
 
@@ -284,7 +285,7 @@ def gmm_batch_vectors(batch, n_gaussians_positive=30, n_gaussians_negative=10, t
         img_clear_positive, img_clear_negative = apply_threshold(img_scaled, mean, std, threshold)
 
         # Verificar si hay puntos en la parte positiva
-        points = generate_points_from_image(img_clear_positive, n_samples=n_points,  density_threshold=density_threshold, density_scaling=density_scaling)
+        points = generate_points_from_image(img_clear_positive, n_samples=n_points, density_threshold=density_threshold, density_scaling=density_scaling)
         if len(points) == 0:
             means = np.zeros((n_gaussians_positive, 2))
             covariances = np.eye(2).reshape((1, 2, 2)).repeat(n_gaussians_positive, axis=0)
@@ -332,6 +333,10 @@ def gmm_batch_vectors(batch, n_gaussians_positive=30, n_gaussians_negative=10, t
                                             std_x,                 # std_x
                                             std_y,                 # std_y
                                             combined_weights])     # weight
+
+        # Ordenar las gaussianas por el valor absoluto de los pesos
+        sorted_indices = np.argsort(-np.abs(combined_weights))  # Ordenar de mayor a menor
+        combined_vectors = combined_vectors[sorted_indices]
 
         combined_batch.append(combined_vectors)
 
