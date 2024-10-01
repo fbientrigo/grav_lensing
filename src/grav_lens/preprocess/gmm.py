@@ -98,6 +98,79 @@ def generate_points_from_image(image, n_samples=100, density_threshold=0.01, den
     return points
 
 
+from skimage.feature import peak_local_max
+
+def generate_points_from_image_peaks(image, threshold_abs=0.01, min_distance=1):
+    """
+    Genera puntos (x, y) a partir de una imagen identificando los máximos locales, junto con un peso proporcional a la intensidad
+    del pixel en cada punto.
+
+    Parámetros:
+        image (numpy array): Imagen en formato numpy array (2D).
+        threshold_abs (float, opcional): Umbral absoluto para ignorar píxeles de baja densidad (por defecto 0.01).
+        min_distance (int, opcional): Distancia mínima entre picos locales (por defecto 1).
+
+    Retorna:
+        points (numpy array): Array de coordenadas (x, y) generadas a partir de los valores de los picos locales.
+        points_weights (numpy array): Pesos de los puntos generados, proporcionales a la intensidad del pixel.
+    """
+    # Verificar si la imagen está vacía (todos los valores son cero)
+    if np.sum(image) == 0:
+        # Si está vacía, devolver una lista vacía de puntos
+        return np.array([])
+
+    # Encontrar los picos locales de la imagen
+    coordinates = peak_local_max(image, min_distance=min_distance, threshold_abs=threshold_abs)
+
+    # # Obtener los pesos correspondientes a la intensidad del pixel en cada coordenada detectada
+    # points_weights = image[coordinates[:, 0], coordinates[:, 1]]
+
+    return coordinates #, points_weights
+
+
+def generate_points_around_peaks(image, peak_coordinates, n_samples=500, std_factor=1.0):
+    """
+    Genera puntos alrededor de los picos de una imagen usando una distribución gaussiana.
+
+    Parámetros:
+        image (numpy.ndarray): La imagen original (2D).
+        peak_coordinates (numpy.ndarray): Coordenadas de los picos (N_p, 2), donde N_p es el número de picos.
+        n_samples (int): Número total de puntos a generar.
+        std_factor (float): Factor para escalar la desviación estándar de la distribución gaussiana.
+
+    Retorna:
+        points (numpy.ndarray): Array de coordenadas (x, y) generadas a partir de los picos.
+    """
+    # Obtener la intensidad en cada uno de los picos
+    intensities = image[peak_coordinates[:, 0], peak_coordinates[:, 1]]
+    probabilities = intensities / intensities.sum()
+
+    # Calcular cuántos puntos se generarán alrededor de cada pico
+    n_points_per_peak = np.random.multinomial(n_samples, probabilities)
+
+    # Inicializar lista de puntos
+    points = []
+
+    for i, (y, x) in enumerate(peak_coordinates):
+        # Desviación estándar proporcional a la intensidad del pico
+        std_dev = std_factor * intensities[i]
+
+        # Generar puntos alrededor del pico
+        x_points = np.random.normal(loc=x, scale=std_dev, size=n_points_per_peak[i])
+        y_points = np.random.normal(loc=y, scale=std_dev, size=n_points_per_peak[i])
+
+        # Agregar puntos a la lista
+        points.append(np.column_stack((y_points, x_points)))
+
+    # Concatenar todos los puntos generados
+    points = np.vstack(points)
+
+    # Filtrar puntos que se salen de los límites de la imagen
+    points = points[(points[:, 0] >= 0) & (points[:, 0] < image.shape[0]) & 
+                    (points[:, 1] >= 0) & (points[:, 1] < image.shape[1])]
+
+    return points
+
 def gaussian_2d(x, y, mux, muy, sigma_x, sigma_y, weight):
     """
     Genera una Gaussiana bidimensional.
@@ -285,17 +358,35 @@ def gmm_batch_vectors(batch, n_gaussians_positive=30, n_gaussians_negative=10, t
         img_clear_positive, img_clear_negative = apply_threshold(img_scaled, mean, std, threshold)
 
         # Verificar si hay puntos en la parte positiva
-        points = generate_points_from_image(img_clear_positive, n_samples=n_points, density_threshold=density_threshold, density_scaling=density_scaling)
+
+        #points = generate_points_from_image(img_clear_positive, n_samples=n_points, density_threshold=density_threshold, density_scaling=density_scaling)
+
+        coordinates = generate_points_from_image_peaks(img_clear_positive, threshold_abs=mean + threshold * std, min_distance=1)
+
+        # Generar puntos alrededor de los picos
+        points = generate_points_around_peaks(img_clear_positive, coordinates, n_samples=n_points, std_factor=10.0)
+
+
+        # Cambiar la lógica de generación del GMM positivo
         if len(points) == 0:
             means = np.zeros((n_gaussians_positive, 2))
             covariances = np.eye(2).reshape((1, 2, 2)).repeat(n_gaussians_positive, axis=0)
             weights = np.zeros(n_gaussians_positive)
         else:
-            gmm = GaussianMixture(n_components=n_gaussians_positive, covariance_type='full', 
+            # Ajustar el número de componentes gaussianas dinámicamente
+            n_components = min(len(points), n_gaussians_positive)
+            gmm = GaussianMixture(n_components=n_components, covariance_type='spherical',
                                   reg_covar=pos_reg_covar, tol=pos_tol).fit(points)
             means = gmm.means_
             covariances = gmm.covariances_
             weights = gmm.weights_
+
+            # Si el número de gaussianas es menor que n_gaussians_positive, rellena con ceros
+            if n_components < n_gaussians_positive:
+                padding = n_gaussians_positive - n_components
+                means = np.pad(means, ((0, padding), (0, 0)), mode='constant')
+                covariances = np.pad(covariances, ((0, padding), (0, 0), (0, 0)), mode='constant')
+                weights = np.pad(weights, (0, padding), mode='constant')
 
         combined_means = means
         combined_covariances = covariances
@@ -303,13 +394,17 @@ def gmm_batch_vectors(batch, n_gaussians_positive=30, n_gaussians_negative=10, t
 
         # Solo calcular la parte negativa si n_gaussians_negative > 0
         if n_gaussians_negative > 0:
-            negative_points = generate_points_from_image(-img_clear_negative)
+            
+            coordinates = generate_points_from_image_peaks(-img_clear_negative, threshold_abs=mean + threshold * std, min_distance=1)
+            # Generar puntos alrededor de los picos
+            negative_points = generate_points_around_peaks(-img_clear_negative, coordinates, n_samples=n_points, std_factor=10.0)
+
             if len(negative_points) == 0:
                 means_negative = np.zeros((n_gaussians_negative, 2))
                 covariances_negative = np.eye(2).reshape((1, 2, 2)).repeat(n_gaussians_negative, axis=0)
                 weights_negative = np.zeros(n_gaussians_negative)
             else:
-                gmm_negative = GaussianMixture(n_components=n_gaussians_negative, covariance_type='full',
+                gmm_negative = GaussianMixture(n_components=n_gaussians_negative, covariance_type='spherical',
                                                reg_covar=neg_reg_covar, tol=neg_tol).fit(negative_points)
                 means_negative = gmm_negative.means_
                 covariances_negative = gmm_negative.covariances_
@@ -324,8 +419,11 @@ def gmm_batch_vectors(batch, n_gaussians_positive=30, n_gaussians_negative=10, t
         combined_means, combined_covariances = scale_gaussian_parameters(combined_means, combined_covariances, scale)
 
         # Extraer las desviaciones estándar (componentes diagonales de las covariancias)
-        std_x = np.maximum(np.sqrt(combined_covariances[:, 0, 0]), 1e-12)  # Desviación estándar en el eje x
-        std_y = np.maximum(np.sqrt(combined_covariances[:, 1, 1]), 1e-12)  # Desviación estándar en el eje y
+        # std_x = np.sqrt(combined_covariances[:, 0, 0])  # Desviación estándar en el eje x
+        # std_y = np.sqrt(combined_covariances[:, 1, 1]) # Desviación estándar en el eje y
+
+        std_x = np.sqrt(combined_covariances)  # Desviación estándar en el eje x
+        std_y = np.sqrt(combined_covariances) # Desviación estándar en el eje y
 
         # Concatenar todos los valores relevantes en un vector (mean_x, mean_y, std_x, std_y, weight)
         combined_vectors = np.column_stack([combined_means[:, 0],  # mean_x
