@@ -1,0 +1,5 @@
+# model_1002.keras
+Total MSE = 604.778, 	LowFreq MSE = 0.1, 	HighFreq MSE = 550, 	Reg Loss = 10
+# model_1002_7pm.keras
+Total MSE = 638.197, 	LowFreq MSE = 0.4, 	HighFreq MSE = 603, Reg Loss = 22
+

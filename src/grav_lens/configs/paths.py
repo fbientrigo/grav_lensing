@@ -76,6 +76,24 @@ def get_datasets_paths_from_index(data_index=DATA_INDEX, max_files=MAX_FILES, ho
     return X, Y
 
 
+# Predicción
+def get_testing_paths(testing_dir, max_files=-1):
+    # 1. Obtener el directorio para "testing/EPSILON"
+    
+    # 2. Usar `list_files_from_directory` para obtener rutas de archivos
+    file_paths = list_files_from_directory(testing_dir, max_files=max_files)
+    
+    # 3. Devolver un generador con las rutas de archivos y los nombres base
+    for file_path in file_paths:
+        yield file_path, os.path.basename(file_path)
+
+
+
+
+
+
+
+
 # Bloque principal para ejecutar el script
 if __name__ == "__main__":
     x_data, y_data = get_data_directory(DATA_INDEX)

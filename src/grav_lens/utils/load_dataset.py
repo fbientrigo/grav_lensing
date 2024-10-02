@@ -2,7 +2,7 @@ import os
 import sys
 import numpy as np
 
-from grav_lens.configs.paths import get_data_directory, list_files_from_directory, get_datasets_paths_from_index
+from grav_lens.configs.paths import get_data_directory, list_files_from_directory, get_datasets_paths_from_index, get_testing_paths
 
 import tensorflow as tf
 
@@ -236,7 +236,51 @@ def get_datasets(data_index=4, max_files=100, home='..', batch_size=32,
     
     return train_dataset, val_dataset, test_dataset
 
-# --------------------
+# -------------------- predicción : -------------
+
+def load_testing_dataset(dataset_path, batch_size=32, max_files=-1):
+    # 1. Obtener rutas y nombres de archivos usando `get_testing_paths`
+    paths_and_names_gen = get_testing_paths(dataset_path, max_files=max_files)
+    
+    # 2. Crear un Dataset de TensorFlow a partir del generador
+    dataset = tf.data.Dataset.from_generator(
+        lambda: paths_and_names_gen,
+        output_signature=(
+            tf.TensorSpec(shape=(), dtype=tf.string),  # Ruta de archivo
+            tf.TensorSpec(shape=(), dtype=tf.string)   # Nombre de archivo
+        )
+    )
+    
+    # 3. Cargar los archivos usando `tf.numpy_function`
+    dataset = dataset.map(
+        lambda path, name: (
+            tf.numpy_function(load_npy_file, [path], tf.float32),
+            name
+        ),
+        num_parallel_calls=tf.data.experimental.AUTOTUNE
+    )
+    
+    # 4. Asegurar el formato correcto de las características (X)
+    dataset = dataset.map(
+        lambda X, name: (tf.ensure_shape(X, [128, 128, 3]), name),
+        num_parallel_calls=tf.data.experimental.AUTOTUNE
+    )
+    
+    # 5. Preparar el dataset (batch, prefetch)
+    dataset = prepare_dataset(dataset, batch_size=batch_size)
+    
+    return dataset
+
+
+# ------------
+
+
+
+
+
+
+
+
 
 
 
