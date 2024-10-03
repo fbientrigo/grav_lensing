@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="es" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>grav_lens.utils.load_dataset &mdash; documentación de gravlens - 1.1.0</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../_static/documentation_options.js?v=4711e12d"></script>
+        <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script src="../../../_static/translations.js?v=d190bf04"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Índice" href="../../../genindex.html" />
+    <link rel="search" title="Búsqueda" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            gravlens
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Buscar documentos" aria-label="Buscar documentos" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">grav_lens</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">gravlens</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Código de módulo</a></li>
+      <li class="breadcrumb-item active">grav_lens.utils.load_dataset</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Código fuente para grav_lens.utils.load_dataset</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">grav_lens.configs.paths</span> <span class="kn">import</span> <span class="n">get_data_directory</span><span class="p">,</span> <span class="n">list_files_from_directory</span><span class="p">,</span> <span class="n">get_datasets_paths_from_index</span><span class="p">,</span> <span class="n">get_testing_paths</span>
+
+<span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="nn">tf</span>
+
+<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">train_test_split</span>
+
+<span class="c1"># Eventualmente, este código de carga de datasets se moverá a utils</span>
+<span class="c1"># from grav_lens.utils.dataset import load_dataset</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Objetivos del script:</span>
+<span class="sd">- A partir de la lista de nombres de archivos (.npy) para características (features) y etiquetas (labels),</span>
+<span class="sd">  cargar los datos en un TensorFlow Dataset.</span>
+<span class="sd">- Realizar pruebas simples sobre el dataset cargado.</span>
+<span class="sd">- Calcular el tamaño en memoria de los datasets cargados.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="c1"># defaults values</span>
+<span class="n">DATA_INDEX</span> <span class="o">=</span> <span class="s1">&#39;1&#39;</span>
+<span class="n">MAX_FILES</span> <span class="o">=</span> <span class="mi">1000</span> <span class="c1"># -1 usa todos los ficheros</span>
+<span class="n">HOME</span> <span class="o">=</span> <span class="s1">&#39;.&#39;</span>
+
+<div class="viewcode-block" id="load_npy_file">
+<a class="viewcode-back" href="../../../grav_lens.utils.html#grav_lens.utils.load_dataset.load_npy_file">[documentos]</a>
+<span class="k">def</span> <span class="nf">load_npy_file</span><span class="p">(</span><span class="n">file_path</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Function to load a .npy file and preprocess it.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">file_path</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">))</span>
+    
+    <span class="c1"># Example processing: reshape or transpose if needed</span>
+    <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>  <span class="c1"># Assuming shape is (channels, height, width)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>  <span class="c1"># Convert to (height, width, channels)</span>
+    <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="calculate_memory_size">
+<a class="viewcode-back" href="../../../grav_lens.utils.html#grav_lens.utils.load_dataset.calculate_memory_size">[documentos]</a>
+<span class="k">def</span> <span class="nf">calculate_memory_size</span><span class="p">(</span><span class="n">arrays</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calcula el tamaño total en memoria de una lista de arrays de numpy.</span>
+
+<span class="sd">    Esta función suma el uso de memoria de cada array en la lista.</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">        arrays (list of numpy.ndarray): Lista de numpy arrays.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        int: Tamaño total en memoria en bytes.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; arrays = [np.array([1, 2, 3]), np.array([4, 5, 6])]</span>
+<span class="sd">        &gt;&gt;&gt; total_size = calculate_memory_size(arrays)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span><span class="n">array</span><span class="o">.</span><span class="n">nbytes</span> <span class="k">for</span> <span class="n">array</span> <span class="ow">in</span> <span class="n">arrays</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="file_path_generator">
+<a class="viewcode-back" href="../../../grav_lens.utils.html#grav_lens.utils.load_dataset.file_path_generator">[documentos]</a>
+<span class="k">def</span> <span class="nf">file_path_generator</span><span class="p">(</span><span class="n">X_paths</span><span class="p">,</span> <span class="n">Y_paths</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generator function that yields file paths incrementally.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">X_path</span><span class="p">,</span> <span class="n">Y_path</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">X_paths</span><span class="p">,</span> <span class="n">Y_paths</span><span class="p">):</span>
+        <span class="k">yield</span> <span class="n">X_path</span><span class="p">,</span> <span class="n">Y_path</span></div>
+
+
+<div class="viewcode-block" id="create_tf_dataset">
+<a class="viewcode-back" href="../../../grav_lens.utils.html#grav_lens.utils.load_dataset.create_tf_dataset">[documentos]</a>
+<span class="k">def</span> <span class="nf">create_tf_dataset</span><span class="p">(</span><span class="n">X_paths</span><span class="p">,</span> <span class="n">Y_paths</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Crea un Dataset de TensorFlow a partir de listas de rutas de archivos .npy para X (características) y Y (etiquetas).</span>
+
+<span class="sd">    Esta función carga los datos desde archivos .npy y construye un Dataset de TensorFlow, asegurando que </span>
+<span class="sd">    el número de muestras en X y Y coincida.</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">        rutas_X (list of str): Lista de rutas a los archivos .npy que contienen las características.</span>
+<span class="sd">        rutas_Y (list of str): Lista de rutas a los archivos .npy que contienen las etiquetas.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        tf.data.Dataset: Dataset de TensorFlow que contiene pares de datos X e Y.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        AssertionError: Si el número de muestras en X y Y no coincide.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; rutas_X = [&#39;X_data1.npy&#39;, &#39;X_data2.npy&#39;]</span>
+<span class="sd">        &gt;&gt;&gt; rutas_Y = [&#39;Y_data1.npy&#39;, &#39;Y_data2.npy&#39;]</span>
+<span class="sd">        &gt;&gt;&gt; dataset = create_tf_dataset(rutas_X, rutas_Y)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">dataset</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Dataset</span><span class="o">.</span><span class="n">from_generator</span><span class="p">(</span>
+        <span class="k">lambda</span><span class="p">:</span> <span class="n">file_path_generator</span><span class="p">(</span><span class="n">X_paths</span><span class="p">,</span> <span class="n">Y_paths</span><span class="p">),</span>
+        <span class="n">output_signature</span><span class="o">=</span><span class="p">(</span>
+            <span class="n">tf</span><span class="o">.</span><span class="n">TensorSpec</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">string</span><span class="p">),</span>
+            <span class="n">tf</span><span class="o">.</span><span class="n">TensorSpec</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">string</span><span class="p">)</span>
+        <span class="p">)</span>
+    <span class="p">)</span>
+    
+
+    <span class="n">dataset</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">map</span><span class="p">(</span>
+        <span class="k">lambda</span> <span class="n">X_path</span><span class="p">,</span> <span class="n">Y_path</span><span class="p">:</span> <span class="p">(</span>
+            <span class="n">tf</span><span class="o">.</span><span class="n">numpy_function</span><span class="p">(</span><span class="n">load_npy_file</span><span class="p">,</span> <span class="p">[</span><span class="n">X_path</span><span class="p">],</span> <span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span>
+            <span class="n">tf</span><span class="o">.</span><span class="n">numpy_function</span><span class="p">(</span><span class="n">load_npy_file</span><span class="p">,</span> <span class="p">[</span><span class="n">Y_path</span><span class="p">],</span> <span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="p">),</span>
+        <span class="n">num_parallel_calls</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">experimental</span><span class="o">.</span><span class="n">AUTOTUNE</span>
+    <span class="p">)</span>
+
+    
+
+    <span class="n">dataset</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">map</span><span class="p">(</span>
+        <span class="k">lambda</span> <span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">:</span> <span class="p">(</span>
+            <span class="n">tf</span><span class="o">.</span><span class="n">ensure_shape</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="p">[</span><span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">3</span><span class="p">]),</span>
+            <span class="n">tf</span><span class="o">.</span><span class="n">ensure_shape</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">),</span> <span class="p">[</span><span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+        <span class="p">),</span>
+        <span class="n">num_parallel_calls</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">experimental</span><span class="o">.</span><span class="n">AUTOTUNE</span>
+    <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">dataset</span></div>
+
+
+<div class="viewcode-block" id="load_tf_dataset">
+<a class="viewcode-back" href="../../../grav_lens.utils.html#grav_lens.utils.load_dataset.load_tf_dataset">[documentos]</a>
+<span class="k">def</span> <span class="nf">load_tf_dataset</span><span class="p">(</span><span class="n">data_index</span><span class="o">=</span><span class="n">DATA_INDEX</span><span class="p">,</span> <span class="n">max_files</span><span class="o">=</span><span class="n">MAX_FILES</span><span class="p">,</span> <span class="n">home</span><span class="o">=</span><span class="n">HOME</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Carga un Dataset de TensorFlow a partir de listas de rutas de archivos .npy para X (características) y Y (etiquetas).</span>
+
+<span class="sd">    Esta función recupera las rutas de los archivos usando un índice de datos y crea un Dataset de TensorFlow.</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">        data_index (str, optional): Índice o identificador para el dataset a cargar. Por defecto es DATA_INDEX.</span>
+<span class="sd">        max_files (int, optional): Número máximo de archivos a cargar. Por defecto es MAX_FILES.</span>
+<span class="sd">        home (str, optional): Directorio principal para el almacenamiento del dataset. Por defecto es HOME.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        tf.data.Dataset: Dataset de TensorFlow que contiene datos X e Y.</span>
+
+<span class="sd">    Dependencias:</span>
+<span class="sd">        get_datasets_paths_from_index</span>
+<span class="sd">        create_tf_dataset</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; dataset = load_tf_dataset(data_index=&#39;001&#39;, max_files=10)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">X_paths</span><span class="p">,</span> <span class="n">Y_paths</span> <span class="o">=</span> <span class="n">get_datasets_paths_from_index</span><span class="p">(</span><span class="n">data_index</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">data_index</span><span class="p">),</span> <span class="n">max_files</span><span class="o">=</span><span class="n">max_files</span><span class="p">,</span> <span class="n">home</span><span class="o">=</span><span class="n">home</span><span class="p">)</span>
+    <span class="n">dataset</span> <span class="o">=</span> <span class="n">create_tf_dataset</span><span class="p">(</span><span class="n">X_paths</span><span class="p">,</span> <span class="n">Y_paths</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">dataset</span></div>
+
+
+<span class="c1"># ---------------------------</span>
+
+<span class="c1"># # Seccion encargada de conseguir training,validation y testing ------------</span>
+<span class="c1"># def split_dataset(X_data, Y_data, val_split=0.2, test_split=0.1):</span>
+<span class="c1">#     # Dividir los datos en entrenamiento y conjunto temporal</span>
+<span class="c1">#     X_train, X_temp, Y_train, Y_temp = train_test_split(X_data, Y_data, test_size=val_split + test_split)</span>
+    
+<span class="c1">#     # Dividir los datos temporales en validación y prueba</span>
+<span class="c1">#     X_val, X_test, Y_val, Y_test = train_test_split(X_temp, Y_temp, test_size=test_split / (val_split + test_split))</span>
+    
+<span class="c1">#     # Convertir a dataset de TensorFlow</span>
+<span class="c1">#     train_dataset = tf.data.Dataset.from_tensor_slices((X_train, Y_train))</span>
+<span class="c1">#     val_dataset = tf.data.Dataset.from_tensor_slices((X_val, Y_val))</span>
+<span class="c1">#     test_dataset = tf.data.Dataset.from_tensor_slices((X_test, Y_test))</span>
+<span class="c1">#     return train_dataset, val_dataset, test_dataset</span>
+
+<div class="viewcode-block" id="prepare_dataset">
+<a class="viewcode-back" href="../../../grav_lens.utils.html#grav_lens.utils.load_dataset.prepare_dataset">[documentos]</a>
+<span class="k">def</span> <span class="nf">prepare_dataset</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">shuffle_buffer</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">drop_remainder</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="n">dataset</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="n">buffer_size</span><span class="o">=</span><span class="n">shuffle_buffer</span><span class="p">)</span>  <span class="c1"># Mezclar datos</span>
+    <span class="n">dataset</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">batch</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">drop_remainder</span><span class="o">=</span><span class="n">drop_remainder</span><span class="p">)</span>  <span class="c1"># Batching</span>
+
+    <span class="n">dataset</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">prefetch</span><span class="p">(</span><span class="n">buffer_size</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">experimental</span><span class="o">.</span><span class="n">AUTOTUNE</span><span class="p">)</span>  <span class="c1"># Prefetch para optimización</span>
+    <span class="k">return</span> <span class="n">dataset</span></div>
+
+
+
+<div class="viewcode-block" id="warnings_size_dataset">
+<a class="viewcode-back" href="../../../grav_lens.utils.html#grav_lens.utils.load_dataset.warnings_size_dataset">[documentos]</a>
+<span class="k">def</span> <span class="nf">warnings_size_dataset</span><span class="p">(</span><span class="n">total_files</span><span class="p">,</span> <span class="n">train_size</span><span class="p">,</span> <span class="n">val_size</span><span class="p">,</span> <span class="n">test_size</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Comprueba que existan suficientes muestras de cada uno,</span>
+<span class="sd">    al crear batchs pueden quedar muestras vacias lo que provoca que no entrene con ese batch</span>
+<span class="sd">    por tanto se ha optado por eliminar los batchs incompletos.</span>
+
+<span class="sd">    Sin embargo en el caso de usar pocos datos y un batch_size significativo, pueden quedar batch vacios</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Validar que haya suficientes datos para al menos un batch en validación y prueba</span>
+    <span class="k">if</span> <span class="n">val_size</span><span class="o">//</span><span class="n">batch_size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;El conjunto de validación tiene solo </span><span class="si">{</span><span class="n">val_size</span><span class="si">}</span><span class="s2"> muestras, lo que no es suficiente para formar un batch completo. Considere ajustar &#39;val_split&#39; o &#39;batch_size&#39;.&quot;</span><span class="p">)</span>
+        <span class="n">val_size</span> <span class="o">=</span> <span class="n">batch_size</span>  <span class="c1"># Ajusta el tamaño de validación para que haya al menos un batch completo.</span>
+    
+    <span class="k">if</span> <span class="n">test_size</span><span class="o">//</span><span class="n">batch_size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;El conjunto de prueba tiene solo </span><span class="si">{</span><span class="n">test_size</span><span class="si">}</span><span class="s2"> muestras, lo que no es suficiente para formar un batch completo. Considere ajustar &#39;test_split&#39; o &#39;batch_size&#39;.&quot;</span><span class="p">)</span>
+        <span class="n">test_size</span> <span class="o">=</span> <span class="n">batch_size</span>  <span class="c1"># Ajusta el tamaño de prueba para que haya al menos un batch completo.</span>
+    
+    <span class="c1"># Asegurarse de que los datos de entrenamiento no queden vacíos</span>
+    <span class="n">train_size</span> <span class="o">=</span> <span class="n">total_files</span> <span class="o">-</span> <span class="n">val_size</span> <span class="o">-</span> <span class="n">test_size</span>
+    <span class="k">if</span> <span class="n">train_size</span><span class="o">//</span><span class="n">batch_size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No hay suficientes datos para entrenamiento. Después de la división, el conjunto de entrenamiento tiene solo </span><span class="si">{</span><span class="n">train_size</span><span class="si">}</span><span class="s2"> muestras. Ajuste las proporciones o el tamaño del batch.&quot;</span><span class="p">)</span></div>
+
+    
+    <span class="c1"># Dividir </span>
+
+
+
+<div class="viewcode-block" id="get_datasets">
+<a class="viewcode-back" href="../../../grav_lens.utils.html#grav_lens.utils.load_dataset.get_datasets">[documentos]</a>
+<span class="k">def</span> <span class="nf">get_datasets</span><span class="p">(</span><span class="n">data_index</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">max_files</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">home</span><span class="o">=</span><span class="s1">&#39;..&#39;</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> 
+    <span class="n">val_split</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">test_split</span><span class="o">=</span><span class="mf">0.1</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Obtiene y divide los datasets en entrenamiento, validación y prueba,</span>
+<span class="sd">    y los prepara para el entrenamiento con el tamaño de batch especificado.</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">        data_index (str, optional): Índice o identificador para el dataset a cargar. Por defecto es &#39;4&#39;.</span>
+<span class="sd">        max_files (int, optional): Número máximo de archivos a cargar. Por defecto es 100.</span>
+<span class="sd">        home (str, optional): Directorio principal para el almacenamiento del dataset. Por defecto es &#39;..&#39;.</span>
+<span class="sd">        batch_size (int, optional): Tamaño del batch para el dataset. Por defecto es 32.</span>
+<span class="sd">        val_split (float, optional): Proporción de datos para el conjunto de validación. Por defecto es 0.2.</span>
+<span class="sd">        test_split (float, optional): Proporción de datos para el conjunto de prueba. Por defecto es 0.1.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        tuple: Tres datasets de TensorFlow (train_dataset, val_dataset, test_dataset).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Obtener rutas de archivos</span>
+    <span class="n">X_paths</span><span class="p">,</span> <span class="n">Y_paths</span> <span class="o">=</span> <span class="n">get_datasets_paths_from_index</span><span class="p">(</span><span class="n">data_index</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">data_index</span><span class="p">),</span> <span class="n">max_files</span><span class="o">=</span><span class="n">max_files</span><span class="p">,</span> <span class="n">home</span><span class="o">=</span><span class="n">home</span><span class="p">)</span>
+    
+    <span class="c1"># Mezclar rutas para aleatorizar</span>
+    <span class="n">combined_paths</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">X_paths</span><span class="p">,</span> <span class="n">Y_paths</span><span class="p">))</span>
+    <span class="n">X_paths</span><span class="p">,</span> <span class="n">Y_paths</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">combined_paths</span><span class="p">)</span>
+    
+    <span class="c1"># Calcular índices de división</span>
+    <span class="n">total_files</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">X_paths</span><span class="p">)</span>
+    <span class="n">val_size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">total_files</span> <span class="o">*</span> <span class="n">val_split</span><span class="p">)</span>
+    <span class="n">test_size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">total_files</span> <span class="o">*</span> <span class="n">test_split</span><span class="p">)</span>
+
+    <span class="c1">#warnings_size_dataset(total_files, train_size, val_size, test_size, batch_size)</span>
+    
+    <span class="c1"># Dividir rutas en entrenamiento, validación y prueba</span>
+    <span class="n">X_train_paths</span><span class="p">,</span> <span class="n">X_val_paths</span><span class="p">,</span> <span class="n">X_test_paths</span> <span class="o">=</span> <span class="n">X_paths</span><span class="p">[:</span><span class="o">-</span><span class="n">val_size</span><span class="o">-</span><span class="n">test_size</span><span class="p">],</span> <span class="n">X_paths</span><span class="p">[</span><span class="o">-</span><span class="n">val_size</span><span class="o">-</span><span class="n">test_size</span><span class="p">:</span><span class="o">-</span><span class="n">test_size</span><span class="p">],</span> <span class="n">X_paths</span><span class="p">[</span><span class="o">-</span><span class="n">test_size</span><span class="p">:]</span>
+    <span class="n">Y_train_paths</span><span class="p">,</span> <span class="n">Y_val_paths</span><span class="p">,</span> <span class="n">Y_test_paths</span> <span class="o">=</span> <span class="n">Y_paths</span><span class="p">[:</span><span class="o">-</span><span class="n">val_size</span><span class="o">-</span><span class="n">test_size</span><span class="p">],</span> <span class="n">Y_paths</span><span class="p">[</span><span class="o">-</span><span class="n">val_size</span><span class="o">-</span><span class="n">test_size</span><span class="p">:</span><span class="o">-</span><span class="n">test_size</span><span class="p">],</span> <span class="n">Y_paths</span><span class="p">[</span><span class="o">-</span><span class="n">test_size</span><span class="p">:]</span>
+    
+    <span class="c1"># Crear datasets para cada conjunto</span>
+    <span class="n">train_dataset</span> <span class="o">=</span> <span class="n">create_tf_dataset</span><span class="p">(</span><span class="n">X_train_paths</span><span class="p">,</span> <span class="n">Y_train_paths</span><span class="p">)</span>
+    <span class="n">val_dataset</span> <span class="o">=</span> <span class="n">create_tf_dataset</span><span class="p">(</span><span class="n">X_val_paths</span><span class="p">,</span> <span class="n">Y_val_paths</span><span class="p">)</span>
+    <span class="n">test_dataset</span> <span class="o">=</span> <span class="n">create_tf_dataset</span><span class="p">(</span><span class="n">X_test_paths</span><span class="p">,</span> <span class="n">Y_test_paths</span><span class="p">)</span>
+    
+    <span class="c1"># Preparar cada dataset</span>
+    <span class="n">train_dataset</span> <span class="o">=</span> <span class="n">prepare_dataset</span><span class="p">(</span><span class="n">train_dataset</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="n">drop_remainder</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">val_dataset</span> <span class="o">=</span> <span class="n">prepare_dataset</span><span class="p">(</span><span class="n">val_dataset</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">)</span>
+    <span class="n">test_dataset</span> <span class="o">=</span> <span class="n">prepare_dataset</span><span class="p">(</span><span class="n">test_dataset</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">train_dataset</span><span class="p">,</span> <span class="n">val_dataset</span><span class="p">,</span> <span class="n">test_dataset</span></div>
+
+
+<span class="c1"># -------------------- predicción : -------------</span>
+
+<div class="viewcode-block" id="load_testing_dataset">
+<a class="viewcode-back" href="../../../grav_lens.utils.html#grav_lens.utils.load_dataset.load_testing_dataset">[documentos]</a>
+<span class="k">def</span> <span class="nf">load_testing_dataset</span><span class="p">(</span><span class="n">dataset_path</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">max_files</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
+    <span class="c1"># 1. Obtener rutas y nombres de archivos usando `get_testing_paths`</span>
+    <span class="n">paths_and_names_gen</span> <span class="o">=</span> <span class="n">get_testing_paths</span><span class="p">(</span><span class="n">dataset_path</span><span class="p">,</span> <span class="n">max_files</span><span class="o">=</span><span class="n">max_files</span><span class="p">)</span>
+    
+    <span class="c1"># 2. Crear un Dataset de TensorFlow a partir del generador</span>
+    <span class="n">dataset</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Dataset</span><span class="o">.</span><span class="n">from_generator</span><span class="p">(</span>
+        <span class="k">lambda</span><span class="p">:</span> <span class="n">paths_and_names_gen</span><span class="p">,</span>
+        <span class="n">output_signature</span><span class="o">=</span><span class="p">(</span>
+            <span class="n">tf</span><span class="o">.</span><span class="n">TensorSpec</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">string</span><span class="p">),</span>  <span class="c1"># Ruta de archivo</span>
+            <span class="n">tf</span><span class="o">.</span><span class="n">TensorSpec</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">string</span><span class="p">)</span>   <span class="c1"># Nombre de archivo</span>
+        <span class="p">)</span>
+    <span class="p">)</span>
+    
+    <span class="c1"># 3. Cargar los archivos usando `tf.numpy_function`</span>
+    <span class="n">dataset</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">map</span><span class="p">(</span>
+        <span class="k">lambda</span> <span class="n">path</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="p">(</span>
+            <span class="n">tf</span><span class="o">.</span><span class="n">numpy_function</span><span class="p">(</span><span class="n">load_npy_file</span><span class="p">,</span> <span class="p">[</span><span class="n">path</span><span class="p">],</span> <span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span>
+            <span class="n">name</span>
+        <span class="p">),</span>
+        <span class="n">num_parallel_calls</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">experimental</span><span class="o">.</span><span class="n">AUTOTUNE</span>
+    <span class="p">)</span>
+    
+    <span class="c1"># 4. Asegurar el formato correcto de las características (X)</span>
+    <span class="n">dataset</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">map</span><span class="p">(</span>
+        <span class="k">lambda</span> <span class="n">X</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">ensure_shape</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="p">[</span><span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">3</span><span class="p">]),</span> <span class="n">name</span><span class="p">),</span>
+        <span class="n">num_parallel_calls</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">experimental</span><span class="o">.</span><span class="n">AUTOTUNE</span>
+    <span class="p">)</span>
+    
+    <span class="c1"># 5. Preparar el dataset (batch, prefetch)</span>
+    <span class="n">dataset</span> <span class="o">=</span> <span class="n">prepare_dataset</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">dataset</span></div>
+
+
+
+<span class="c1"># ------------</span>
+
+
+
+
+
+
+
+
+
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">home</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+        <span class="s2">&quot;..&quot;</span><span class="p">,</span><span class="s2">&quot;..&quot;</span><span class="p">,</span><span class="s2">&quot;..&quot;</span><span class="p">,</span> <span class="s2">&quot;data&quot;</span>
+    <span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">home</span><span class="p">)</span>
+    <span class="n">dataset</span> <span class="o">=</span> <span class="n">load_tf_dataset</span><span class="p">(</span><span class="n">data_index</span><span class="o">=</span><span class="n">DATA_INDEX</span><span class="p">,</span> <span class="n">max_files</span><span class="o">=</span><span class="n">MAX_FILES</span><span class="p">,</span> <span class="n">home</span><span class="o">=</span><span class="n">home</span><span class="p">)</span>
+
+    <span class="c1"># Imprimir información básica del dataset para verificar</span>
+    <span class="k">for</span> <span class="n">X</span><span class="p">,</span> <span class="n">Y</span> <span class="ow">in</span> <span class="n">dataset</span><span class="o">.</span><span class="n">take</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>  <span class="c1"># Solo mostrar los primeros 5 elementos</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;X:&quot;</span><span class="p">,</span> <span class="n">X</span><span class="o">.</span><span class="n">numpy</span><span class="p">())</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Y:&quot;</span><span class="p">,</span> <span class="n">Y</span><span class="o">.</span><span class="n">numpy</span><span class="p">())</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Derechos de autor 2024, Fabian Trigo.</p>
+  </div>
+
+  Compilado con <a href="https://www.sphinx-doc.org/">Sphinx</a> usando un
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">tema</a>
+    proporcionado por <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

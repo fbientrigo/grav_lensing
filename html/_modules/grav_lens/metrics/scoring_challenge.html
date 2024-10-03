@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="es" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>grav_lens.metrics.scoring_challenge &mdash; documentación de gravlens - 1.1.0</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../_static/documentation_options.js?v=4711e12d"></script>
+        <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script src="../../../_static/translations.js?v=d190bf04"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Índice" href="../../../genindex.html" />
+    <link rel="search" title="Búsqueda" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            gravlens
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Buscar documentos" aria-label="Buscar documentos" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">grav_lens</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">gravlens</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Código de módulo</a></li>
+      <li class="breadcrumb-item active">grav_lens.metrics.scoring_challenge</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Código fuente para grav_lens.metrics.scoring_challenge</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="nn">tf</span>
+<span class="kn">from</span> <span class="nn">scipy.ndimage</span> <span class="kn">import</span> <span class="n">gaussian_filter</span>
+<span class="kn">from</span> <span class="nn">skimage.feature</span> <span class="kn">import</span> <span class="n">peak_local_max</span>
+<span class="kn">import</span> <span class="nn">unittest</span>
+
+
+<span class="c1"># ======= Metric used for scoring in the challenge ========</span>
+
+<div class="viewcode-block" id="WMAPE">
+<a class="viewcode-back" href="../../../grav_lens.metrics.html#grav_lens.metrics.scoring_challenge.WMAPE">[documentos]</a>
+<span class="k">def</span> <span class="nf">WMAPE</span><span class="p">(</span><span class="n">T</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">P</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">delta</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">constant</span><span class="p">(</span><span class="mf">1e-5</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">)):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calcula el Error Medio Absoluto Porcentual Ponderado (WMAPE) entre dos tensores.</span>
+<span class="sd">    El WMAPE es una métrica de error que tiene en cuenta la magnitud de las</span>
+<span class="sd">    observaciones reales al ponderar las diferencias absolutas entre las predicciones</span>
+<span class="sd">    y los valores reales. Esta métrica es útil en escenarios donde los valores reales</span>
+<span class="sd">    tienen una variabilidad significativa, permitiendo un cálculo más equitativo del error.</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">        T (tf.Tensor): Tensor que representa los valores reales u observados.</span>
+<span class="sd">        P (tf.Tensor): Tensor que representa los valores predichos.</span>
+<span class="sd">        delta (tf.Tensor, optional): Un pequeño valor constante para evitar divisiones por cero. </span>
+<span class="sd">                                        Por defecto es 1e-5.</span>
+<span class="sd">    </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        tf.Tensor: Un tensor escalar que representa el WMAPE calculado.</span>
+<span class="sd">    </span>
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; T = tf.constant([10.0, 0.0, 5.0])</span>
+<span class="sd">        &gt;&gt;&gt; P = tf.constant([9.0, 1.0, 5.0])</span>
+<span class="sd">        &gt;&gt;&gt; wmape = WMAPE(T, P)</span>
+<span class="sd">        &gt;&gt;&gt; print(wmape.numpy())</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">T</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">T</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">delta</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span>
+    <span class="n">P</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">P</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">delta</span><span class="p">,</span> <span class="n">P</span><span class="p">)</span>
+    <span class="n">W_fun</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">T</span><span class="p">,</span> <span class="n">max_T</span><span class="p">:</span> <span class="mi">1</span> <span class="o">+</span> <span class="p">(</span><span class="n">T</span> <span class="o">/</span> <span class="n">max_T</span><span class="p">)</span>
+    <span class="n">max_T</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">reduce_max</span><span class="p">(</span><span class="n">T</span><span class="p">)</span>
+    <span class="n">W</span> <span class="o">=</span> <span class="n">W_fun</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">max_T</span><span class="p">)</span>
+    <span class="n">Numerator</span> <span class="o">=</span> <span class="n">W</span> <span class="o">*</span> <span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">P</span> <span class="o">-</span> <span class="n">T</span><span class="p">)</span> <span class="o">/</span> <span class="n">tf</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">T</span><span class="p">))</span>
+    <span class="n">sum_W</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">reduce_sum</span><span class="p">(</span><span class="n">W</span><span class="p">)</span>
+    <span class="n">sum_Numerator</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">reduce_sum</span><span class="p">(</span><span class="n">Numerator</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">sum_Numerator</span> <span class="o">/</span> <span class="n">sum_W</span></div>
+
+
+<div class="viewcode-block" id="DICE_binary_mask">
+<a class="viewcode-back" href="../../../grav_lens.metrics.html#grav_lens.metrics.scoring_challenge.DICE_binary_mask">[documentos]</a>
+<span class="k">def</span> <span class="nf">DICE_binary_mask</span><span class="p">(</span><span class="n">tensor</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Genera una máscara binaria a partir de un tensor.</span>
+
+<span class="sd">    Esta función crea una máscara binaria basada en la diferencia de cada elemento del tensor</span>
+<span class="sd">    respecto a la media del tensor. Los valores mayores a la media se establecen en 1, mientras</span>
+<span class="sd">    que los valores menores o iguales a la media se establecen en 0.</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">        tensor (tf.Tensor): Un tensor de entrada sobre el cual se calculará la máscara binaria.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        tf.Tensor: Un tensor binario (del mismo tamaño que el tensor de entrada) con valores 1 para</span>
+<span class="sd">                   los elementos que están por encima de la media y 0 para los que están por debajo</span>
+<span class="sd">                   o son iguales a la media.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; tensor = tf.constant([[1.0, 2.0], [3.0, 4.0]])</span>
+<span class="sd">        &gt;&gt;&gt; mask = DICE_binary_mask(tensor)</span>
+<span class="sd">        &gt;&gt;&gt; print(mask.numpy())</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">tensor_mask</span> <span class="o">=</span> <span class="n">tensor</span> <span class="o">-</span> <span class="n">tf</span><span class="o">.</span><span class="n">reduce_mean</span><span class="p">(</span><span class="n">tensor</span><span class="p">)</span>
+    <span class="n">tensor_mask</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">tensor_mask</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">tensor_mask</span><span class="p">),</span> <span class="n">tf</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">tensor_mask</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">tensor_mask</span></div>
+
+
+<div class="viewcode-block" id="DICEE">
+<a class="viewcode-back" href="../../../grav_lens.metrics.html#grav_lens.metrics.scoring_challenge.DICEE">[documentos]</a>
+<span class="k">def</span> <span class="nf">DICEE</span><span class="p">(</span><span class="n">T</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">P</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">beta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calcula el coeficiente DICE ponderado entre dos tensores.</span>
+
+<span class="sd">    El coeficiente DICE es una métrica de similitud utilizada principalmente en tareas de segmentación,</span>
+<span class="sd">    donde se evalúa el grado de coincidencia entre dos conjuntos binarios. Esta función extiende el coeficiente</span>
+<span class="sd">    DICE estándar al permitir ponderar falsos positivos y falsos negativos con los parámetros alpha y beta.</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">        T (tf.Tensor): Tensor que representa las etiquetas reales o el ground truth.</span>
+<span class="sd">        P (tf.Tensor): Tensor que representa las predicciones.</span>
+<span class="sd">        alpha (float, optional): Factor de ponderación para los falsos negativos. Por defecto es 0.5.</span>
+<span class="sd">        beta (float, optional): Factor de ponderación para los falsos positivos. Por defecto es 0.5.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        tf.Tensor or None: Un tensor escalar que representa el coeficiente DICE calculado.</span>
+<span class="sd">                           Devuelve None si las formas de T y P no coinciden.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; T = tf.constant([[1.0, 2.0], [0.0, 0.0]])</span>
+<span class="sd">        &gt;&gt;&gt; P = tf.constant([[1.0, 1.0], [0.0, 0.0]])</span>
+<span class="sd">        &gt;&gt;&gt; dice = DICEE(T, P)</span>
+<span class="sd">        &gt;&gt;&gt; print(dice.numpy())</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">T</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="n">P</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="n">G</span> <span class="o">=</span> <span class="n">DICE_binary_mask</span><span class="p">(</span><span class="n">T</span><span class="p">)</span>
+    <span class="n">A</span> <span class="o">=</span> <span class="n">DICE_binary_mask</span><span class="p">(</span><span class="n">P</span><span class="p">)</span>
+    <span class="n">sum_G_A</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">reduce_sum</span><span class="p">(</span><span class="n">G</span> <span class="o">*</span> <span class="n">A</span><span class="p">)</span>
+    <span class="n">sum_alpha</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">reduce_sum</span><span class="p">(</span><span class="n">A</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">G</span><span class="p">))</span>
+    <span class="n">sum_beta</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">reduce_sum</span><span class="p">(</span><span class="n">G</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">A</span><span class="p">))</span>
+    <span class="k">return</span> <span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="n">sum_G_A</span> <span class="o">/</span> <span class="p">(</span><span class="n">sum_G_A</span> <span class="o">+</span> <span class="n">alpha</span> <span class="o">*</span> <span class="n">sum_alpha</span> <span class="o">+</span> <span class="n">beta</span> <span class="o">*</span> <span class="n">sum_beta</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="find_top_k_peaks">
+<a class="viewcode-back" href="../../../grav_lens.metrics.html#grav_lens.metrics.scoring_challenge.find_top_k_peaks">[documentos]</a>
+<span class="k">def</span> <span class="nf">find_top_k_peaks</span><span class="p">(</span><span class="n">im</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">N</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
+    <span class="n">smoothed</span> <span class="o">=</span> <span class="n">gaussian_filter</span><span class="p">(</span><span class="n">im</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="n">sigma</span><span class="p">)</span>
+    <span class="n">coordinates</span> <span class="o">=</span> <span class="n">peak_local_max</span><span class="p">(</span><span class="n">smoothed</span><span class="p">,</span> <span class="n">threshold_abs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">num_peaks</span><span class="o">=</span><span class="n">N</span><span class="p">)</span>
+    <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">coordinates</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="n">coordinates</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">coordinates</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])])</span>
+    <span class="k">return</span> <span class="n">coordinates</span></div>
+
+
+<div class="viewcode-block" id="DPEAKS">
+<a class="viewcode-back" href="../../../grav_lens.metrics.html#grav_lens.metrics.scoring_challenge.DPEAKS">[documentos]</a>
+<span class="k">def</span> <span class="nf">DPEAKS</span><span class="p">(</span><span class="n">T</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">P</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">num_peaks</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calcula la distancia absoluta sumada entre las cumbres principales de dos imágenes.</span>
+
+<span class="sd">    Esta función compara las cumbres principales de dos imágenes encontradas mediante la función</span>
+<span class="sd">    `find_top_k_peaks` y calcula la suma de las distancias absolutas entre las posiciones de cumbres</span>
+<span class="sd">    correspondientes.</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">        T (np.ndarray): Primera imagen (o tensor) para comparar.</span>
+<span class="sd">        P (np.ndarray): Segunda imagen (o tensor) para comparar.</span>
+<span class="sd">        num_peaks (int, optional): Número de cumbres principales a encontrar en cada imagen. Por defecto es 3.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        float: La suma de las distancias absolutas entre las cumbres principales de las dos imágenes.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; T = np.random.rand(10, 10)</span>
+<span class="sd">        &gt;&gt;&gt; P = np.random.rand(10, 10)</span>
+<span class="sd">        &gt;&gt;&gt; dpeaks = DPEAKS(T, P, num_peaks=3)</span>
+<span class="sd">        &gt;&gt;&gt; print(dpeaks)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">PEAKS_T</span> <span class="o">=</span> <span class="n">find_top_k_peaks</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">N</span><span class="o">=</span><span class="n">num_peaks</span><span class="p">)</span>
+    <span class="n">PEAKS_P</span> <span class="o">=</span> <span class="n">find_top_k_peaks</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">N</span><span class="o">=</span><span class="n">num_peaks</span><span class="p">)</span>
+    <span class="n">sum_DPEAKS</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">PEAKS_T</span> <span class="o">-</span> <span class="n">PEAKS_P</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">sum_DPEAKS</span></div>
+
+
+<span class="c1"># ======= Test the functions ========</span>
+
+<div class="viewcode-block" id="TestMetrics">
+<a class="viewcode-back" href="../../../grav_lens.metrics.html#grav_lens.metrics.scoring_challenge.TestMetrics">[documentos]</a>
+<span class="k">class</span> <span class="nc">TestMetrics</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
+
+<div class="viewcode-block" id="TestMetrics.setUp">
+<a class="viewcode-back" href="../../../grav_lens.metrics.html#grav_lens.metrics.scoring_challenge.TestMetrics.setUp">[documentos]</a>
+    <span class="k">def</span> <span class="nf">setUp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># Example tensors for testing</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">T</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">constant</span><span class="p">([[</span><span class="mf">2.0</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">],</span> <span class="p">[</span><span class="mf">5.0</span><span class="p">,</span> <span class="mf">7.0</span><span class="p">]])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">P</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">constant</span><span class="p">([[</span><span class="mf">2.5</span><span class="p">,</span> <span class="mf">3.5</span><span class="p">],</span> <span class="p">[</span><span class="mf">4.0</span><span class="p">,</span> <span class="mf">6.0</span><span class="p">]])</span></div>
+
+
+<div class="viewcode-block" id="TestMetrics.test_WMAPE">
+<a class="viewcode-back" href="../../../grav_lens.metrics.html#grav_lens.metrics.scoring_challenge.TestMetrics.test_WMAPE">[documentos]</a>
+    <span class="k">def</span> <span class="nf">test_WMAPE</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">WMAPE</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">P</span><span class="p">)</span>
+        <span class="n">expected</span> <span class="o">=</span> <span class="mf">0.1848148</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertAlmostEqual</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">numpy</span><span class="p">(),</span> <span class="n">expected</span><span class="p">,</span> <span class="n">places</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="TestMetrics.test_DICE_binary_mask">
+<a class="viewcode-back" href="../../../grav_lens.metrics.html#grav_lens.metrics.scoring_challenge.TestMetrics.test_DICE_binary_mask">[documentos]</a>
+    <span class="k">def</span> <span class="nf">test_DICE_binary_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">tensor</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">constant</span><span class="p">([[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">2.0</span><span class="p">]])</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">DICE_binary_mask</span><span class="p">(</span><span class="n">tensor</span><span class="p">)</span>
+        <span class="n">expected</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">constant</span><span class="p">([[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">numpy</span><span class="p">(),</span> <span class="n">expected</span><span class="o">.</span><span class="n">numpy</span><span class="p">()))</span></div>
+
+
+<div class="viewcode-block" id="TestMetrics.test_DICEE">
+<a class="viewcode-back" href="../../../grav_lens.metrics.html#grav_lens.metrics.scoring_challenge.TestMetrics.test_DICEE">[documentos]</a>
+    <span class="k">def</span> <span class="nf">test_DICEE</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">T</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">constant</span><span class="p">([[</span><span class="mf">1.0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]])</span>
+        <span class="n">P</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">constant</span><span class="p">([[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]])</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">DICEE</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">P</span><span class="p">)</span>
+        <span class="n">expected</span> <span class="o">=</span> <span class="mf">0.3333333</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertAlmostEqual</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">numpy</span><span class="p">(),</span> <span class="n">expected</span><span class="p">,</span> <span class="n">places</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="TestMetrics.test_DPEAKS">
+<a class="viewcode-back" href="../../../grav_lens.metrics.html#grav_lens.metrics.scoring_challenge.TestMetrics.test_DPEAKS">[documentos]</a>
+    <span class="k">def</span> <span class="nf">test_DPEAKS</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">center</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
+            <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+            <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+            <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+            <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+            <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+            <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+            <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+            <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+            <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+            <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="p">])</span>
+
+        <span class="c1"># Create a 10x10 tensor with peaks near the borders</span>
+        <span class="n">border</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
+            <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">8</span><span class="p">,</span> <span class="mi">10</span><span class="p">],</span>
+            <span class="p">[</span><span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">],</span>
+            <span class="p">[</span><span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">],</span>
+            <span class="p">[</span><span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">],</span>
+            <span class="p">[</span><span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">],</span>
+            <span class="p">[</span><span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">],</span>
+            <span class="p">[</span><span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">],</span>
+            <span class="p">[</span><span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">],</span>
+            <span class="p">[</span><span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">],</span>
+            <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">]</span>
+        <span class="p">])</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">DPEAKS</span><span class="p">(</span><span class="n">center</span><span class="p">,</span> <span class="n">border</span><span class="p">)</span>
+        <span class="n">expected</span> <span class="o">=</span> <span class="mi">15</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">expected</span><span class="p">)</span></div>
+</div>
+
+
+<div class="viewcode-block" id="main">
+<a class="viewcode-back" href="../../../grav_lens.metrics.html#grav_lens.metrics.scoring_challenge.main">[documentos]</a>
+<span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Testing WMAPE&quot;</span><span class="p">)</span>
+    <span class="n">T</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">constant</span><span class="p">([[</span><span class="mf">10.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">20.0</span><span class="p">]])</span>
+    <span class="n">P</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">constant</span><span class="p">([[</span><span class="mf">8.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">25.0</span><span class="p">]])</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;WMAPE:&quot;</span><span class="p">,</span> <span class="n">WMAPE</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">P</span><span class="p">)</span><span class="o">.</span><span class="n">numpy</span><span class="p">())</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Testing DICEE&quot;</span><span class="p">)</span>
+    <span class="n">T</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">constant</span><span class="p">([[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]])</span>
+    <span class="n">P</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">constant</span><span class="p">([[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]])</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;DICEE:&quot;</span><span class="p">,</span> <span class="n">DICEE</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">P</span><span class="p">)</span><span class="o">.</span><span class="n">numpy</span><span class="p">())</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Testing DPEAKS&quot;</span><span class="p">)</span>
+    <span class="n">T</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">]])</span>
+    <span class="n">P</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">]])</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;DPEAKS:&quot;</span><span class="p">,</span> <span class="n">DPEAKS</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">P</span><span class="p">))</span>
+
+    <span class="c1"># Run unit tests</span>
+    <span class="n">unittest</span><span class="o">.</span><span class="n">main</span><span class="p">(</span><span class="n">argv</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;&#39;</span><span class="p">],</span> <span class="n">exit</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">main</span><span class="p">()</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Derechos de autor 2024, Fabian Trigo.</p>
+  </div>
+
+  Compilado con <a href="https://www.sphinx-doc.org/">Sphinx</a> usando un
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">tema</a>
+    proporcionado por <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

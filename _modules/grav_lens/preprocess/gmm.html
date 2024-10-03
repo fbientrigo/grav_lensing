@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="es" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>grav_lens.preprocess.gmm &mdash; documentación de gravlens - 1.1.0</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../_static/documentation_options.js?v=4711e12d"></script>
+        <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script src="../../../_static/translations.js?v=d190bf04"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Índice" href="../../../genindex.html" />
+    <link rel="search" title="Búsqueda" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            gravlens
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Buscar documentos" aria-label="Buscar documentos" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">grav_lens</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">gravlens</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Código de módulo</a></li>
+      <li class="breadcrumb-item active">grav_lens.preprocess.gmm</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Código fuente para grav_lens.preprocess.gmm</h1><div class="highlight"><pre>
+<span></span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">from</span> <span class="nn">sklearn.mixture</span> <span class="kn">import</span> <span class="n">GaussianMixture</span>
+
+
+
+<span class="c1"># ----------- Funciones Basicas de las que dependen las otras ----------------</span>
+<span class="kn">import</span> <span class="nn">cv2</span>
+
+<div class="viewcode-block" id="downscale_image">
+<a class="viewcode-back" href="../../../grav_lens.preprocess.html#grav_lens.preprocess.gmm.downscale_image">[documentos]</a>
+<span class="k">def</span> <span class="nf">downscale_image</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mf">0.5</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Escala la imagen a la mitad de su resolución.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">height</span><span class="p">,</span> <span class="n">width</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">new_dim</span> <span class="o">=</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">width</span> <span class="o">*</span> <span class="n">scale</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">height</span> <span class="o">*</span> <span class="n">scale</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">cv2</span><span class="o">.</span><span class="n">resize</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">new_dim</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="n">cv2</span><span class="o">.</span><span class="n">INTER_AREA</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="calculate_image_stats">
+<a class="viewcode-back" href="../../../grav_lens.preprocess.html#grav_lens.preprocess.gmm.calculate_image_stats">[documentos]</a>
+<span class="k">def</span> <span class="nf">calculate_image_stats</span><span class="p">(</span><span class="n">image</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calcula la media y la desviación estándar de la imagen.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">mean_value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+    <span class="n">std_value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">mean_value</span><span class="p">,</span> <span class="n">std_value</span></div>
+
+
+
+<div class="viewcode-block" id="apply_threshold">
+<a class="viewcode-back" href="../../../grav_lens.preprocess.html#grav_lens.preprocess.gmm.apply_threshold">[documentos]</a>
+<span class="k">def</span> <span class="nf">apply_threshold</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">mean_value</span><span class="p">,</span> <span class="n">std_value</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">1.0</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Aplica un umbral a la imagen basado en la media y la desviación estándar.</span>
+
+<span class="sd">    Parámetros:</span>
+<span class="sd">        image (numpy array): Imagen en formato numpy array.</span>
+<span class="sd">        mean_value (float): Media de los valores de la imagen.</span>
+<span class="sd">        std_value (float): Desviación estándar de los valores de la imagen.</span>
+<span class="sd">        threshold (float): Factor de umbral para definir el rango de valores que se mantendrán.</span>
+
+<span class="sd">    Retorna:</span>
+<span class="sd">        image_thresholded (numpy array): Imagen con valores filtrados.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">lower_bound</span> <span class="o">=</span> <span class="n">mean_value</span> <span class="o">-</span> <span class="n">threshold</span> <span class="o">*</span> <span class="n">std_value</span>
+    <span class="n">upper_bound</span> <span class="o">=</span> <span class="n">mean_value</span> <span class="o">+</span> <span class="n">threshold</span> <span class="o">*</span> <span class="n">std_value</span>
+    
+    <span class="c1"># Filtrar la imagen utilizando el umbral</span>
+    <span class="n">image_thresholded_positive</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">((</span><span class="n">image</span> <span class="o">&gt;=</span> <span class="n">upper_bound</span><span class="p">),</span> <span class="n">image</span> <span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">image_thresholded_negative</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">((</span><span class="n">image</span> <span class="o">&lt;=</span> <span class="n">lower_bound</span><span class="p">),</span> <span class="n">image</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">image_thresholded_positive</span><span class="p">,</span> <span class="n">image_thresholded_negative</span></div>
+
+
+
+<div class="viewcode-block" id="generate_points_from_image">
+<a class="viewcode-back" href="../../../grav_lens.preprocess.html#grav_lens.preprocess.gmm.generate_points_from_image">[documentos]</a>
+<span class="k">def</span> <span class="nf">generate_points_from_image</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">n_samples</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">density_threshold</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">density_scaling</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Genera una cantidad fija de puntos (x, y) a partir de una imagen, donde la cantidad de puntos es proporcional a la</span>
+<span class="sd">    intensidad del pixel y los puntos de mayor densidad tienen más probabilidades de ser seleccionados.</span>
+
+<span class="sd">    Parámetros:</span>
+<span class="sd">        image (numpy array): Imagen en formato numpy array (2D).</span>
+<span class="sd">        n_samples (int): Número total de puntos a generar.</span>
+<span class="sd">        density_threshold (float, opcional): Umbral para ignorar píxeles de baja densidad (por defecto 0.01).</span>
+<span class="sd">        density_scaling (bool, opcional): Si True, se escalarán las intensidades de los píxeles para aumentar la probabilidad </span>
+<span class="sd">                                          de seleccionar puntos más densos (por defecto True).</span>
+
+<span class="sd">    Retorna:</span>
+<span class="sd">        points (numpy array): Array de coordenadas (x, y) generadas a partir de los valores de los píxeles.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Verificar si la imagen está vacía (todos los valores son cero)</span>
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">image</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="c1"># Si está vacía, devolver una lista vacía de puntos</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
+
+    <span class="c1"># Aplanar la imagen para simplificar el muestreo</span>
+    <span class="n">flattened_image</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+
+    <span class="c1"># Aplicar el umbral para ignorar píxeles de baja densidad</span>
+    <span class="n">flattened_image</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">flattened_image</span> <span class="o">&gt;=</span> <span class="n">density_threshold</span><span class="p">,</span> <span class="n">flattened_image</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+    <span class="c1"># Verificar si la imagen sigue vacía después del umbral</span>
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">flattened_image</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
+
+    <span class="c1"># Si se habilita el escalado por densidad, aumentar la importancia de los píxeles con más densidad</span>
+    <span class="k">if</span> <span class="n">density_scaling</span><span class="p">:</span>
+        <span class="n">flattened_image</span> <span class="o">=</span> <span class="n">flattened_image</span> <span class="o">**</span> <span class="mi">2</span>  <span class="c1"># Incrementar la importancia de los píxeles más densos</span>
+
+    <span class="c1"># Normalizar la imagen para que sus valores sumen 1 (esto crea una distribución de probabilidad)</span>
+    <span class="n">probabilities</span> <span class="o">=</span> <span class="n">flattened_image</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">flattened_image</span><span class="p">)</span>
+
+    <span class="c1"># Generar los índices de los píxeles con muestreo ponderado según las intensidades</span>
+    <span class="n">chosen_indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">flattened_image</span><span class="p">),</span> <span class="n">size</span><span class="o">=</span><span class="n">n_samples</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="n">probabilities</span><span class="p">)</span>
+
+    <span class="c1"># Convertir los índices planos en coordenadas (x, y)</span>
+    <span class="n">x_coords</span><span class="p">,</span> <span class="n">y_coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unravel_index</span><span class="p">(</span><span class="n">chosen_indices</span><span class="p">,</span> <span class="n">image</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+
+    <span class="c1"># Combinar las coordenadas en una lista de puntos (x, y)</span>
+    <span class="n">points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">x_coords</span><span class="p">,</span> <span class="n">y_coords</span><span class="p">))</span><span class="o">.</span><span class="n">T</span>
+
+    <span class="k">return</span> <span class="n">points</span></div>
+
+
+
+<span class="kn">from</span> <span class="nn">skimage.feature</span> <span class="kn">import</span> <span class="n">peak_local_max</span>
+
+<div class="viewcode-block" id="generate_points_from_image_peaks">
+<a class="viewcode-back" href="../../../grav_lens.preprocess.html#grav_lens.preprocess.gmm.generate_points_from_image_peaks">[documentos]</a>
+<span class="k">def</span> <span class="nf">generate_points_from_image_peaks</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">threshold_abs</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">min_distance</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Genera puntos (x, y) a partir de una imagen identificando los máximos locales, junto con un peso proporcional a la intensidad</span>
+<span class="sd">    del pixel en cada punto.</span>
+
+<span class="sd">    Parámetros:</span>
+<span class="sd">        image (numpy array): Imagen en formato numpy array (2D).</span>
+<span class="sd">        threshold_abs (float, opcional): Umbral absoluto para ignorar píxeles de baja densidad (por defecto 0.01).</span>
+<span class="sd">        min_distance (int, opcional): Distancia mínima entre picos locales (por defecto 1).</span>
+
+<span class="sd">    Retorna:</span>
+<span class="sd">        points (numpy array): Array de coordenadas (x, y) generadas a partir de los valores de los picos locales.</span>
+<span class="sd">        points_weights (numpy array): Pesos de los puntos generados, proporcionales a la intensidad del pixel.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Verificar si la imagen está vacía (todos los valores son cero)</span>
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">image</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="c1"># Si está vacía, devolver una lista vacía de puntos</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
+
+    <span class="c1"># Encontrar los picos locales de la imagen</span>
+    <span class="n">coordinates</span> <span class="o">=</span> <span class="n">peak_local_max</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">min_distance</span><span class="o">=</span><span class="n">min_distance</span><span class="p">,</span> <span class="n">threshold_abs</span><span class="o">=</span><span class="n">threshold_abs</span><span class="p">)</span>
+
+    <span class="c1"># # Obtener los pesos correspondientes a la intensidad del pixel en cada coordenada detectada</span>
+    <span class="c1"># points_weights = image[coordinates[:, 0], coordinates[:, 1]]</span>
+
+    <span class="k">return</span> <span class="n">coordinates</span> <span class="c1">#, points_weights</span></div>
+
+
+
+<div class="viewcode-block" id="generate_points_around_peaks">
+<a class="viewcode-back" href="../../../grav_lens.preprocess.html#grav_lens.preprocess.gmm.generate_points_around_peaks">[documentos]</a>
+<span class="k">def</span> <span class="nf">generate_points_around_peaks</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">peak_coordinates</span><span class="p">,</span> <span class="n">n_samples</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">std_factor</span><span class="o">=</span><span class="mf">1.0</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Genera puntos alrededor de los picos de una imagen usando una distribución gaussiana.</span>
+
+<span class="sd">    Parámetros:</span>
+<span class="sd">        image (numpy.ndarray): La imagen original (2D).</span>
+<span class="sd">        peak_coordinates (numpy.ndarray): Coordenadas de los picos (N_p, 2), donde N_p es el número de picos.</span>
+<span class="sd">        n_samples (int): Número total de puntos a generar.</span>
+<span class="sd">        std_factor (float): Factor para escalar la desviación estándar de la distribución gaussiana.</span>
+
+<span class="sd">    Retorna:</span>
+<span class="sd">        points (numpy.ndarray): Array de coordenadas (x, y) generadas a partir de los picos.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Obtener la intensidad en cada uno de los picos</span>
+    <span class="n">intensities</span> <span class="o">=</span> <span class="n">image</span><span class="p">[</span><span class="n">peak_coordinates</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">peak_coordinates</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]]</span>
+    <span class="n">probabilities</span> <span class="o">=</span> <span class="n">intensities</span> <span class="o">/</span> <span class="n">intensities</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+
+    <span class="c1"># Calcular cuántos puntos se generarán alrededor de cada pico</span>
+    <span class="n">n_points_per_peak</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">multinomial</span><span class="p">(</span><span class="n">n_samples</span><span class="p">,</span> <span class="n">probabilities</span><span class="p">)</span>
+
+    <span class="c1"># Inicializar lista de puntos</span>
+    <span class="n">points</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">peak_coordinates</span><span class="p">):</span>
+        <span class="c1"># Desviación estándar proporcional a la intensidad del pico</span>
+        <span class="n">std_dev</span> <span class="o">=</span> <span class="n">std_factor</span> <span class="o">*</span> <span class="n">intensities</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+
+        <span class="c1"># Generar puntos alrededor del pico</span>
+        <span class="n">x_points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="n">x</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="n">std_dev</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">n_points_per_peak</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="n">y_points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="n">y</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="n">std_dev</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">n_points_per_peak</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+
+        <span class="c1"># Agregar puntos a la lista</span>
+        <span class="n">points</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">((</span><span class="n">y_points</span><span class="p">,</span> <span class="n">x_points</span><span class="p">)))</span>
+
+    <span class="c1"># Concatenar todos los puntos generados</span>
+    <span class="n">points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">(</span><span class="n">points</span><span class="p">)</span>
+
+    <span class="c1"># Filtrar puntos que se salen de los límites de la imagen</span>
+    <span class="n">points</span> <span class="o">=</span> <span class="n">points</span><span class="p">[(</span><span class="n">points</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">points</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">image</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">&amp;</span> 
+                    <span class="p">(</span><span class="n">points</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">points</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">image</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])]</span>
+
+    <span class="k">return</span> <span class="n">points</span></div>
+
+
+<div class="viewcode-block" id="gaussian_2d">
+<a class="viewcode-back" href="../../../grav_lens.preprocess.html#grav_lens.preprocess.gmm.gaussian_2d">[documentos]</a>
+<span class="k">def</span> <span class="nf">gaussian_2d</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">mux</span><span class="p">,</span> <span class="n">muy</span><span class="p">,</span> <span class="n">sigma_x</span><span class="p">,</span> <span class="n">sigma_y</span><span class="p">,</span> <span class="n">weight</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Genera una Gaussiana bidimensional.</span>
+
+<span class="sd">    Parámetros:</span>
+<span class="sd">        x, y (numpy array): Coordenadas de la cuadrícula.</span>
+<span class="sd">        mux, muy (float): Medias en x e y.</span>
+<span class="sd">        sigma_x, sigma_y (float): Desviaciones estándar en x e y.</span>
+<span class="sd">        weight (float): Peso de la gaussiana.</span>
+
+<span class="sd">    Retorna:</span>
+<span class="sd">        (numpy array): Imagen generada de la gaussiana.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">weight</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">((</span><span class="n">x</span> <span class="o">-</span> <span class="n">mux</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">sigma_x</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">y</span> <span class="o">-</span> <span class="n">muy</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">sigma_y</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)))</span></div>
+
+
+
+<div class="viewcode-block" id="reconstruct_image_from_gmm">
+<a class="viewcode-back" href="../../../grav_lens.preprocess.html#grav_lens.preprocess.gmm.reconstruct_image_from_gmm">[documentos]</a>
+<span class="k">def</span> <span class="nf">reconstruct_image_from_gmm</span><span class="p">(</span><span class="n">image_shape</span><span class="p">,</span> <span class="n">means</span><span class="p">,</span> <span class="n">covariances</span><span class="p">,</span> <span class="n">weights</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Reconstruye la imagen a partir de los parámetros del GMM.</span>
+<span class="sd">    </span>
+<span class="sd">    Parámetros:</span>
+<span class="sd">        image_shape (tuple): La forma de la imagen (ancho, alto).</span>
+<span class="sd">        means (numpy array): Medias de las gaussianas.</span>
+<span class="sd">        covariances (numpy array): Covarianzas de las gaussianas.</span>
+<span class="sd">        weights (numpy array): Pesos de mezcla de las gaussianas.</span>
+<span class="sd">    </span>
+<span class="sd">    Retorna:</span>
+<span class="sd">        reconstructed_image (numpy array): La imagen reconstruida.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Crear una cuadrícula de coordenadas</span>
+    <span class="n">x_grid</span><span class="p">,</span> <span class="n">y_grid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">image_shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">image_shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="n">indexing</span><span class="o">=</span><span class="s1">&#39;ij&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Inicializar la imagen reconstruida</span>
+    <span class="n">reconstructed_image</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">image_shape</span><span class="p">)</span>
+
+    <span class="c1"># Iterar sobre las gaussianas para reconstruir la imagen</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">means</span><span class="p">)):</span>
+        <span class="n">mux</span><span class="p">,</span> <span class="n">muy</span> <span class="o">=</span> <span class="n">means</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>  <span class="c1"># Las coordenadas de la media (x, y)</span>
+        <span class="n">sigma_x</span><span class="p">,</span> <span class="n">sigma_y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">covariances</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">covariances</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>  <span class="c1"># Desviaciones estándar</span>
+        <span class="n">weight</span> <span class="o">=</span> <span class="n">weights</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>  <span class="c1"># Peso de la gaussiana</span>
+
+        <span class="c1"># Generar la gaussiana y añadirla a la imagen reconstruida</span>
+        <span class="n">gaussian</span> <span class="o">=</span> <span class="n">gaussian_2d</span><span class="p">(</span><span class="n">x_grid</span><span class="p">,</span> <span class="n">y_grid</span><span class="p">,</span> <span class="n">mux</span><span class="p">,</span> <span class="n">muy</span><span class="p">,</span> <span class="n">sigma_x</span><span class="p">,</span> <span class="n">sigma_y</span><span class="p">,</span> <span class="n">weight</span><span class="p">)</span>
+        <span class="n">reconstructed_image</span> <span class="o">+=</span> <span class="n">gaussian</span>
+
+    <span class="k">return</span> <span class="n">reconstructed_image</span></div>
+
+
+<div class="viewcode-block" id="plot_comparison">
+<a class="viewcode-back" href="../../../grav_lens.preprocess.html#grav_lens.preprocess.gmm.plot_comparison">[documentos]</a>
+<span class="k">def</span> <span class="nf">plot_comparison</span><span class="p">(</span><span class="n">original_image</span><span class="p">,</span> <span class="n">reconstructed_image</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Grafica la imagen original y la imagen reconstruida una al lado de la otra.</span>
+
+<span class="sd">    Parámetros:</span>
+<span class="sd">        original_image (numpy array): Imagen original.</span>
+<span class="sd">        reconstructed_image (numpy array): Imagen reconstruida.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+    
+    <span class="c1"># Imagen original</span>
+    <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">original_image</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;viridis&#39;</span><span class="p">)</span>
+    <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Imagen Original&quot;</span><span class="p">)</span>
+    <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s1">&#39;off&#39;</span><span class="p">)</span>
+    
+    <span class="c1"># Imagen reconstruida</span>
+    <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">reconstructed_image</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;viridis&#39;</span><span class="p">)</span>
+    <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Imagen Reconstruida&quot;</span><span class="p">)</span>
+    <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s1">&#39;off&#39;</span><span class="p">)</span>
+    
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span></div>
+
+
+<span class="c1"># -------- GMM ------------</span>
+<div class="viewcode-block" id="gmm_vectors">
+<a class="viewcode-back" href="../../../grav_lens.preprocess.html#grav_lens.preprocess.gmm.gmm_vectors">[documentos]</a>
+<span class="k">def</span> <span class="nf">gmm_vectors</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">mean</span><span class="p">,</span> <span class="n">std</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">n_gaussians_positive</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">n_gaussians_negative</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Aplica modelos de mezclas gaussianas (GMM) a una imagen procesada por umbralización, generando vectores de medias, covarianzas y pesos.</span>
+
+<span class="sd">    Parámetros:</span>
+<span class="sd">        img (numpy array): Imagen a procesar (2D).</span>
+<span class="sd">        mean (float): Media utilizada para la normalización de la imagen.</span>
+<span class="sd">        std (float): Desviación estándar utilizada para la normalización de la imagen.</span>
+<span class="sd">        threshold (float, opcional): Umbral para separar las frecuencias (por defecto 3).</span>
+<span class="sd">        n_gaussians_positive (int, opcional): Número de componentes gaussianas positivas (por defecto 20).</span>
+<span class="sd">        n_gaussians_negative (int, opcional): Número de componentes gaussianas negativas (por defecto 10).</span>
+<span class="sd">    </span>
+<span class="sd">    Retorna:</span>
+<span class="sd">        combined_means (numpy array): Vectores de medias combinadas de los GMM positivo y negativo.</span>
+<span class="sd">        combined_covariances (numpy array): Matriz de covarianzas combinadas de los GMM positivo y negativo.</span>
+<span class="sd">        combined_weights (numpy array): Pesos combinados de los GMM positivo y negativo.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">img_clear_positive</span><span class="p">,</span> <span class="n">img_clear_negative</span> <span class="o">=</span> <span class="n">apply_threshold</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">mean</span><span class="p">,</span> <span class="n">std</span><span class="p">,</span> <span class="n">threshold</span><span class="p">)</span>
+
+    <span class="n">points</span> <span class="o">=</span> <span class="n">generate_points_from_image</span><span class="p">(</span><span class="n">img_clear_positive</span><span class="p">)</span>
+    <span class="n">gmm</span> <span class="o">=</span> <span class="n">GaussianMixture</span><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="n">n_gaussians_positive</span><span class="p">,</span> <span class="n">covariance_type</span><span class="o">=</span><span class="s1">&#39;full&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">points</span><span class="p">)</span>
+    <span class="n">means</span> <span class="o">=</span> <span class="n">gmm</span><span class="o">.</span><span class="n">means_</span>
+    <span class="n">covariances</span> <span class="o">=</span> <span class="n">gmm</span><span class="o">.</span><span class="n">covariances_</span>
+    <span class="n">weights</span> <span class="o">=</span> <span class="n">gmm</span><span class="o">.</span><span class="n">weights_</span>
+
+    <span class="n">negative_points</span> <span class="o">=</span> <span class="n">generate_points_from_image</span><span class="p">(</span><span class="o">-</span><span class="n">img_clear_negative</span><span class="p">)</span>
+    <span class="n">gmm_negative</span> <span class="o">=</span> <span class="n">GaussianMixture</span><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="n">n_gaussians_negative</span><span class="p">,</span> <span class="n">covariance_type</span><span class="o">=</span><span class="s1">&#39;full&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">negative_points</span><span class="p">)</span>
+    <span class="n">means_negative</span> <span class="o">=</span> <span class="n">gmm_negative</span><span class="o">.</span><span class="n">means_</span>
+    <span class="n">covariances_negative</span> <span class="o">=</span> <span class="n">gmm_negative</span><span class="o">.</span><span class="n">covariances_</span>
+    <span class="n">weights_negative</span> <span class="o">=</span> <span class="o">-</span><span class="n">gmm_negative</span><span class="o">.</span><span class="n">weights_</span>
+
+    <span class="c1"># ---- concatenar ambos resultados</span>
+
+    <span class="c1"># Concatenar medios, covarianzas y pesos</span>
+    <span class="n">combined_means</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">means</span><span class="p">,</span> <span class="n">means_negative</span><span class="p">])</span>
+    <span class="n">combined_covariances</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">covariances</span><span class="p">,</span> <span class="n">covariances_negative</span><span class="p">])</span>
+    <span class="n">combined_weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="n">weights</span><span class="p">,</span> <span class="n">weights_negative</span><span class="p">])</span>
+
+    <span class="k">return</span> <span class="n">combined_means</span><span class="p">,</span> <span class="n">combined_covariances</span><span class="p">,</span> <span class="n">combined_weights</span></div>
+
+
+<span class="kn">import</span> <span class="nn">cv2</span>
+
+<span class="c1"># Nueva función para escalar las gaussianas</span>
+<div class="viewcode-block" id="scale_gaussian_parameters">
+<a class="viewcode-back" href="../../../grav_lens.preprocess.html#grav_lens.preprocess.gmm.scale_gaussian_parameters">[documentos]</a>
+<span class="k">def</span> <span class="nf">scale_gaussian_parameters</span><span class="p">(</span><span class="n">means</span><span class="p">,</span> <span class="n">covariances</span><span class="p">,</span> <span class="n">scale</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Escala los parámetros de las gaussianas (medias y covarianzas) para ajustar la resolución original.</span>
+<span class="sd">    </span>
+<span class="sd">    Parámetros:</span>
+<span class="sd">        means (numpy array): Medias (x, y) de las gaussianas.</span>
+<span class="sd">        covariances (numpy array): Covarianzas (matriz 2x2) de las gaussianas.</span>
+<span class="sd">        scale (float): Factor de escalado inverso para volver a la resolución original.</span>
+<span class="sd">    </span>
+<span class="sd">    Retorna:</span>
+<span class="sd">        scaled_means (numpy array): Medias escaladas.</span>
+<span class="sd">        scaled_covariances (numpy array): Covarianzas escaladas.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">scaled_means</span> <span class="o">=</span> <span class="n">means</span> <span class="o">/</span> <span class="n">scale</span>  <span class="c1"># Escalar las medias</span>
+    <span class="n">scaled_covariances</span> <span class="o">=</span> <span class="n">covariances</span> <span class="o">/</span> <span class="p">(</span><span class="n">scale</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>  <span class="c1"># Escalar las covarianzas (cuadrado del factor de escala)</span>
+    <span class="k">return</span> <span class="n">scaled_means</span><span class="p">,</span> <span class="n">scaled_covariances</span></div>
+
+
+<span class="c1"># Función para aplicar el GMM en imágenes escaladas</span>
+<div class="viewcode-block" id="gmm_batch_vectors">
+<a class="viewcode-back" href="../../../grav_lens.preprocess.html#grav_lens.preprocess.gmm.gmm_batch_vectors">[documentos]</a>
+<span class="k">def</span> <span class="nf">gmm_batch_vectors</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">n_gaussians_positive</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">n_gaussians_negative</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">n_points</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> 
+                      <span class="n">scale</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">density_threshold</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">density_scaling</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                      <span class="n">pos_reg_covar</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">,</span> <span class="n">pos_tol</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">,</span> <span class="n">neg_reg_covar</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">,</span> <span class="n">neg_tol</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Aplica modelos de mezclas gaussianas (GMM) a un batch de imágenes escaladas, generando vectores de medias, desviaciones estándar y pesos.</span>
+<span class="sd">    Luego, reescala las gaussianas para que correspondan a la resolución original y las ordena por la magnitud de sus pesos.</span>
+
+
+<span class="sd">    Esta función primero reduce la resolución de las imágenes de entrada, aplica un modelo GMM para extraer las componentes gaussianas</span>
+<span class="sd">    positivas y negativas, y finalmente reescala las gaussianas a la resolución original. Se usa para aproximar las distribuciones</span>
+<span class="sd">    de alta y baja frecuencia en las imágenes.</span>
+
+<span class="sd">    Parámetros:</span>
+<span class="sd">        batch (numpy.ndarray):  Batch de imágenes a procesar con shape (batch_size, altura, anchura, 1).</span>
+<span class="sd">        n_gaussians_positive (int, opcional):   Número de componentes gaussianas positivas (por defecto 30).</span>
+<span class="sd">        n_gaussians_negative (int, opcional):   Número de componentes gaussianas negativas (por defecto 10).</span>
+<span class="sd">        threshold (float, opcional):    Umbral para separar las frecuencias. Define qué partes de la imagen se consideran &quot;positivas&quot; o &quot;negativas&quot; (por defecto 2).</span>
+<span class="sd">        n_points (int, opcional):   Número de puntos a generar para el modelo GMM a partir de la imagen umbralizada (por defecto 500).</span>
+<span class="sd">        scale (float, opcional):    Factor de escalado de la imagen para reducir la resolución (por defecto 0.5).</span>
+<span class="sd">        pos_reg_covar (float, opcional):    Regularización aplicada a las covariancias de las gaussianas positivas (por defecto 1e-3).</span>
+<span class="sd">        pos_tol (float, opcional):  Tolerancia para la convergencia del GMM positivo (por defecto 1e-5).</span>
+<span class="sd">        neg_reg_covar (float, opcional):    Regularización aplicada a las covariancias de las gaussianas negativas (por defecto 1e-3).</span>
+<span class="sd">        neg_tol (float, opcional):  Tolerancia para la convergencia del GMM negativo (por defecto 1e-5).</span>
+
+<span class="sd">    Retorna:</span>
+<span class="sd">        numpy.ndarray:  Batch de vectores combinados con shape (batch_size, n_gaussianas, 5). Cada vector tiene el formato </span>
+<span class="sd">                       [mean_x, mean_y, std_x, std_y, weight], donde mean_x y mean_y son las medias de la gaussiana,</span>
+<span class="sd">                       std_x y std_y son las desviaciones estándar, y weight es el peso de la gaussiana.</span>
+
+<span class="sd">    Notas:</span>
+<span class="sd">        - Se aplica un escalado a las imágenes antes de calcular las gaussianas, lo que reduce la cantidad de detalles procesados.</span>
+<span class="sd">        - Después de aplicar GMM, los parámetros gaussianos se reescalan a la resolución original.</span>
+<span class="sd">        - Esta función es útil para capturar tanto las frecuencias altas como bajas de la imagen usando GMM en distintas resoluciones.</span>
+
+<span class="sd">    Ejemplo:</span>
+<span class="sd">        &gt;&gt;&gt; batch = np.random.random((10, 128, 128, 1))</span>
+<span class="sd">        &gt;&gt;&gt; result = gmm_batch_vectors(batch, n_gaussians_positive=20, n_gaussians_negative=5, scale=0.5)</span>
+<span class="sd">        &gt;&gt;&gt; result.shape</span>
+<span class="sd">        (10, 25, 5)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">batch_size</span> <span class="o">=</span> <span class="n">batch</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">combined_batch</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">original_shape</span> <span class="o">=</span> <span class="n">batch</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="mi">3</span><span class="p">]</span>  <span class="c1"># Obtener la forma original (altura, anchura)</span>
+    <span class="n">mean</span><span class="p">,</span> <span class="n">std</span> <span class="o">=</span> <span class="n">calculate_image_stats</span><span class="p">(</span><span class="n">batch</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">batch_size</span><span class="p">):</span>
+        <span class="n">img</span> <span class="o">=</span> <span class="n">batch</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:,</span> <span class="mi">0</span><span class="p">]</span>  <span class="c1"># Tomamos cada imagen del batch</span>
+
+        <span class="c1"># Escalar la imagen</span>
+        <span class="n">img_scaled</span> <span class="o">=</span> <span class="n">downscale_image</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="n">scale</span><span class="p">)</span>
+
+        <span class="c1"># Aplicar umbrales y calcular GMMs en la imagen escalada</span>
+        <span class="n">img_clear_positive</span><span class="p">,</span> <span class="n">img_clear_negative</span> <span class="o">=</span> <span class="n">apply_threshold</span><span class="p">(</span><span class="n">img_scaled</span><span class="p">,</span> <span class="n">mean</span><span class="p">,</span> <span class="n">std</span><span class="p">,</span> <span class="n">threshold</span><span class="p">)</span>
+
+        <span class="c1"># Verificar si hay puntos en la parte positiva</span>
+
+        <span class="c1">#points = generate_points_from_image(img_clear_positive, n_samples=n_points, density_threshold=density_threshold, density_scaling=density_scaling)</span>
+
+        <span class="n">coordinates</span> <span class="o">=</span> <span class="n">generate_points_from_image_peaks</span><span class="p">(</span><span class="n">img_clear_positive</span><span class="p">,</span> <span class="n">threshold_abs</span><span class="o">=</span><span class="n">mean</span> <span class="o">+</span> <span class="n">threshold</span> <span class="o">*</span> <span class="n">std</span><span class="p">,</span> <span class="n">min_distance</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># Generar puntos alrededor de los picos</span>
+        <span class="n">points</span> <span class="o">=</span> <span class="n">generate_points_around_peaks</span><span class="p">(</span><span class="n">img_clear_positive</span><span class="p">,</span> <span class="n">coordinates</span><span class="p">,</span> <span class="n">n_samples</span><span class="o">=</span><span class="n">n_points</span><span class="p">,</span> <span class="n">std_factor</span><span class="o">=</span><span class="mf">10.0</span><span class="p">)</span>
+
+
+        <span class="c1"># Cambiar la lógica de generación del GMM positivo</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">points</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">means</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_gaussians_positive</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+            <span class="n">covariances</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">n_gaussians_positive</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_gaussians_positive</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Ajustar el número de componentes gaussianas dinámicamente</span>
+            <span class="n">n_components</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">points</span><span class="p">),</span> <span class="n">n_gaussians_positive</span><span class="p">)</span>
+            <span class="n">gmm</span> <span class="o">=</span> <span class="n">GaussianMixture</span><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="n">n_components</span><span class="p">,</span> <span class="n">covariance_type</span><span class="o">=</span><span class="s1">&#39;spherical&#39;</span><span class="p">,</span>
+                                  <span class="n">reg_covar</span><span class="o">=</span><span class="n">pos_reg_covar</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="n">pos_tol</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">points</span><span class="p">)</span>
+            <span class="n">means</span> <span class="o">=</span> <span class="n">gmm</span><span class="o">.</span><span class="n">means_</span>
+            <span class="n">covariances</span> <span class="o">=</span> <span class="n">gmm</span><span class="o">.</span><span class="n">covariances_</span>
+            <span class="n">weights</span> <span class="o">=</span> <span class="n">gmm</span><span class="o">.</span><span class="n">weights_</span>
+
+            <span class="c1"># Si el número de gaussianas es menor que n_gaussians_positive, rellena con ceros</span>
+            <span class="k">if</span> <span class="n">n_components</span> <span class="o">&lt;</span> <span class="n">n_gaussians_positive</span><span class="p">:</span>
+                <span class="n">padding</span> <span class="o">=</span> <span class="n">n_gaussians_positive</span> <span class="o">-</span> <span class="n">n_components</span>
+                <span class="n">means</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="n">means</span><span class="p">,</span> <span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="n">padding</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)),</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;constant&#39;</span><span class="p">)</span>
+                <span class="n">covariances</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="n">covariances</span><span class="p">,</span> <span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="n">padding</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)),</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;constant&#39;</span><span class="p">)</span>
+                <span class="n">weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="n">weights</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">padding</span><span class="p">),</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;constant&#39;</span><span class="p">)</span>
+
+        <span class="n">combined_means</span> <span class="o">=</span> <span class="n">means</span>
+        <span class="n">combined_covariances</span> <span class="o">=</span> <span class="n">covariances</span>
+        <span class="n">combined_weights</span> <span class="o">=</span> <span class="n">weights</span>
+
+        <span class="c1"># Solo calcular la parte negativa si n_gaussians_negative &gt; 0</span>
+        <span class="k">if</span> <span class="n">n_gaussians_negative</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            
+            <span class="n">coordinates</span> <span class="o">=</span> <span class="n">generate_points_from_image_peaks</span><span class="p">(</span><span class="o">-</span><span class="n">img_clear_negative</span><span class="p">,</span> <span class="n">threshold_abs</span><span class="o">=</span><span class="n">mean</span> <span class="o">+</span> <span class="n">threshold</span> <span class="o">*</span> <span class="n">std</span><span class="p">,</span> <span class="n">min_distance</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="c1"># Generar puntos alrededor de los picos</span>
+            <span class="n">negative_points</span> <span class="o">=</span> <span class="n">generate_points_around_peaks</span><span class="p">(</span><span class="o">-</span><span class="n">img_clear_negative</span><span class="p">,</span> <span class="n">coordinates</span><span class="p">,</span> <span class="n">n_samples</span><span class="o">=</span><span class="n">n_points</span><span class="p">,</span> <span class="n">std_factor</span><span class="o">=</span><span class="mf">10.0</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">negative_points</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">means_negative</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_gaussians_negative</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+                <span class="n">covariances_negative</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">n_gaussians_negative</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+                <span class="n">weights_negative</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_gaussians_negative</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">gmm_negative</span> <span class="o">=</span> <span class="n">GaussianMixture</span><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="n">n_gaussians_negative</span><span class="p">,</span> <span class="n">covariance_type</span><span class="o">=</span><span class="s1">&#39;spherical&#39;</span><span class="p">,</span>
+                                               <span class="n">reg_covar</span><span class="o">=</span><span class="n">neg_reg_covar</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="n">neg_tol</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">negative_points</span><span class="p">)</span>
+                <span class="n">means_negative</span> <span class="o">=</span> <span class="n">gmm_negative</span><span class="o">.</span><span class="n">means_</span>
+                <span class="n">covariances_negative</span> <span class="o">=</span> <span class="n">gmm_negative</span><span class="o">.</span><span class="n">covariances_</span>
+                <span class="n">weights_negative</span> <span class="o">=</span> <span class="o">-</span><span class="n">gmm_negative</span><span class="o">.</span><span class="n">weights_</span>
+
+            <span class="c1"># Concatenar los resultados de las gaussianas negativas</span>
+            <span class="n">combined_means</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">combined_means</span><span class="p">,</span> <span class="n">means_negative</span><span class="p">])</span>
+            <span class="n">combined_covariances</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">combined_covariances</span><span class="p">,</span> <span class="n">covariances_negative</span><span class="p">])</span>
+            <span class="n">combined_weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="n">combined_weights</span><span class="p">,</span> <span class="n">weights_negative</span><span class="p">])</span>
+
+        <span class="c1"># Reescalar las gaussianas a la resolución original ---------------------</span>
+        <span class="n">combined_means</span><span class="p">,</span> <span class="n">combined_covariances</span> <span class="o">=</span> <span class="n">scale_gaussian_parameters</span><span class="p">(</span><span class="n">combined_means</span><span class="p">,</span> <span class="n">combined_covariances</span><span class="p">,</span> <span class="n">scale</span><span class="p">)</span>
+
+        <span class="c1"># Extraer las desviaciones estándar (componentes diagonales de las covariancias)</span>
+        <span class="c1"># std_x = np.sqrt(combined_covariances[:, 0, 0])  # Desviación estándar en el eje x</span>
+        <span class="c1"># std_y = np.sqrt(combined_covariances[:, 1, 1]) # Desviación estándar en el eje y</span>
+
+        <span class="n">std_x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">combined_covariances</span><span class="p">)</span>  <span class="c1"># Desviación estándar en el eje x</span>
+        <span class="n">std_y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">combined_covariances</span><span class="p">)</span> <span class="c1"># Desviación estándar en el eje y</span>
+
+        <span class="c1"># Concatenar todos los valores relevantes en un vector (mean_x, mean_y, std_x, std_y, weight)</span>
+        <span class="n">combined_vectors</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">([</span><span class="n">combined_means</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span>  <span class="c1"># mean_x</span>
+                                            <span class="n">combined_means</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span>  <span class="c1"># mean_y</span>
+                                            <span class="n">std_x</span><span class="p">,</span>                 <span class="c1"># std_x</span>
+                                            <span class="n">std_y</span><span class="p">,</span>                 <span class="c1"># std_y</span>
+                                            <span class="n">combined_weights</span><span class="p">])</span>     <span class="c1"># weight</span>
+
+        <span class="c1"># Ordenar las gaussianas por el valor absoluto de los pesos</span>
+        <span class="n">sorted_indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">combined_weights</span><span class="p">))</span>  <span class="c1"># Ordenar de mayor a menor</span>
+        <span class="n">combined_vectors</span> <span class="o">=</span> <span class="n">combined_vectors</span><span class="p">[</span><span class="n">sorted_indices</span><span class="p">]</span>
+
+        <span class="n">combined_batch</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">combined_vectors</span><span class="p">)</span>
+
+    <span class="c1"># Convertir la lista en un numpy array con shape (batch_size, n_gaussianas, 5)</span>
+    <span class="n">combined_batch</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">combined_batch</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">combined_batch</span></div>
+
+
+<span class="c1"># -------------- reconstruction ------------------</span>
+
+<span class="c1"># Función para reconstruir las imágenes de baja frecuencia a partir de los coeficientes PCA</span>
+<div class="viewcode-block" id="reconstruct_lowfreq_from_pca">
+<a class="viewcode-back" href="../../../grav_lens.preprocess.html#grav_lens.preprocess.gmm.reconstruct_lowfreq_from_pca">[documentos]</a>
+<span class="k">def</span> <span class="nf">reconstruct_lowfreq_from_pca</span><span class="p">(</span><span class="n">principal_components</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="n">ipca_low</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Reconstruye las imágenes de baja frecuencia a partir de los coeficientes PCA.</span>
+
+<span class="sd">    Parámetros:</span>
+<span class="sd">        principal_components (numpy array): Coeficientes de PCA con shape (batch, n_components).</span>
+<span class="sd">        batch_size (int): El tamaño del batch.</span>
+<span class="sd">    </span>
+<span class="sd">    Retorna:</span>
+<span class="sd">        lowfreq_images (numpy array): Imágenes de baja frecuencia reconstruidas con shape (batch, 128, 128, 1).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Inverso del transformado PCA</span>
+    <span class="n">low_freq_vstack</span> <span class="o">=</span> <span class="n">ipca_low</span><span class="o">.</span><span class="n">inverse_transform</span><span class="p">(</span><span class="n">principal_components</span><span class="p">)</span>
+    
+    <span class="c1"># Convertir de vstack (batch * 128 * 128) a forma (batch, 128, 128, 1)</span>
+    <span class="n">lowfreq_images</span> <span class="o">=</span> <span class="n">low_freq_vstack</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">lowfreq_images</span></div>
+
+
+<span class="c1"># Función para reconstruir imágenes de alta frecuencia en batch a partir de las gaussianas</span>
+<div class="viewcode-block" id="reconstruct_highfreq_from_gmm">
+<a class="viewcode-back" href="../../../grav_lens.preprocess.html#grav_lens.preprocess.gmm.reconstruct_highfreq_from_gmm">[documentos]</a>
+<span class="k">def</span> <span class="nf">reconstruct_highfreq_from_gmm</span><span class="p">(</span><span class="n">gaussians</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="n">image_shape</span><span class="o">=</span><span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">)):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Reconstruye las imágenes de alta frecuencia a partir de los parámetros del GMM para todo el batch.</span>
+
+<span class="sd">    Parámetros:</span>
+<span class="sd">        gaussians (numpy array): Parámetros del GMM de shape (batch, n_gaussians, 5).</span>
+<span class="sd">        batch_size (int): Tamaño del batch.</span>
+<span class="sd">        image_shape (tuple): La forma de la imagen de salida (ancho, alto), por defecto (128, 128).</span>
+
+<span class="sd">    Retorna:</span>
+<span class="sd">        highfreq_images (numpy array): Imágenes de alta frecuencia reconstruidas con shape (batch, 128, 128, 1).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">highfreq_images</span> <span class="o">=</span> <span class="p">[]</span>
+    
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">batch_size</span><span class="p">):</span>
+        <span class="c1"># Obtener los parámetros de las gaussianas para esta imagen</span>
+        <span class="n">means</span> <span class="o">=</span> <span class="n">gaussians</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:</span><span class="mi">2</span><span class="p">]</span>
+        <span class="n">covariances</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[[</span><span class="n">g</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">g</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="p">]]</span> <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">gaussians</span><span class="p">[</span><span class="n">i</span><span class="p">]])</span>  <span class="c1"># Construir la matriz de covarianzas a partir de std</span>
+        <span class="n">weights</span> <span class="o">=</span> <span class="n">gaussians</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:,</span> <span class="mi">4</span><span class="p">]</span>
+
+        <span class="c1"># Reconstruir la imagen desde los parámetros del GMM</span>
+        <span class="n">reconstructed_image</span> <span class="o">=</span> <span class="n">reconstruct_image_from_gmm</span><span class="p">(</span><span class="n">image_shape</span><span class="p">,</span> <span class="n">means</span><span class="p">,</span> <span class="n">covariances</span><span class="p">,</span> <span class="n">weights</span><span class="p">)</span>
+        
+        <span class="c1"># Añadir al batch</span>
+        <span class="n">highfreq_images</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">reconstructed_image</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">image_shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">image_shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mi">1</span><span class="p">))</span>  <span class="c1"># Añadir canal de color</span>
+    
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">highfreq_images</span><span class="p">)</span></div>
+
+
+<span class="c1"># Función para reconstruir el batch completo sumando ambas frecuencias</span>
+<div class="viewcode-block" id="reconstruct_batch_images">
+<a class="viewcode-back" href="../../../grav_lens.preprocess.html#grav_lens.preprocess.gmm.reconstruct_batch_images">[documentos]</a>
+<span class="k">def</span> <span class="nf">reconstruct_batch_images</span><span class="p">(</span><span class="n">principal_components</span><span class="p">,</span> <span class="n">gaussians</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="n">ipca_low</span><span class="p">,</span> <span class="n">image_shape</span><span class="o">=</span><span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">)):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Reconstruye el batch completo de imágenes sumando las componentes de baja y alta frecuencia.</span>
+
+<span class="sd">    Parámetros:</span>
+<span class="sd">        principal_components (numpy array): Coeficientes de PCA de baja frecuencia con shape (batch, n_components).</span>
+<span class="sd">        gaussians (numpy array): Parámetros del GMM de alta frecuencia de shape (batch, n_gaussians, 5).</span>
+<span class="sd">        batch_size (int): Tamaño del batch.</span>
+<span class="sd">        image_shape (tuple): La forma de la imagen de salida (ancho, alto), por defecto (128, 128).</span>
+
+<span class="sd">    Retorna:</span>
+<span class="sd">        batch_images (numpy array): Batch de imágenes reconstruidas con shape (batch, 128, 128, 1).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Reconstruir la parte de baja frecuencia</span>
+    <span class="n">lowfreq_images</span> <span class="o">=</span> <span class="n">reconstruct_lowfreq_from_pca</span><span class="p">(</span><span class="n">principal_components</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="n">ipca_low</span><span class="p">)</span>
+    
+    <span class="c1"># Reconstruir la parte de alta frecuencia</span>
+    <span class="n">highfreq_images</span> <span class="o">=</span> <span class="n">reconstruct_highfreq_from_gmm</span><span class="p">(</span><span class="n">gaussians</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="n">image_shape</span><span class="p">)</span>
+    
+    <span class="c1"># Sumar las dos componentes para obtener las imágenes originales</span>
+    <span class="n">batch_images</span> <span class="o">=</span> <span class="n">lowfreq_images</span> <span class="o">+</span> <span class="n">highfreq_images</span>
+    
+    <span class="k">return</span> <span class="n">batch_images</span></div>
+
+
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Derechos de autor 2024, Fabian Trigo.</p>
+  </div>
+
+  Compilado con <a href="https://www.sphinx-doc.org/">Sphinx</a> usando un
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">tema</a>
+    proporcionado por <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

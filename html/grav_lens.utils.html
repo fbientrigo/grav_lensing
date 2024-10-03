@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="es" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>grav_lens.utils package &mdash; documentación de gravlens - 1.1.0</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=4711e12d"></script>
+        <script src="_static/doctools.js?v=9a2dae69"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script src="_static/translations.js?v=d190bf04"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Índice" href="genindex.html" />
+    <link rel="search" title="Búsqueda" href="search.html" />
+    <link rel="prev" title="grav_lens.testing package" href="grav_lens.testing.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            gravlens
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Buscar documentos" aria-label="Buscar documentos" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">grav_lens</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="grav_lens.html">grav_lens package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="grav_lens.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="grav_lens.configs.html">grav_lens.configs package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="grav_lens.metrics.html">grav_lens.metrics package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="grav_lens.models.html">grav_lens.models package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="grav_lens.preprocess.html">grav_lens.preprocess package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="grav_lens.testing.html">grav_lens.testing package</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">grav_lens.utils package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="grav_lens.html#module-grav_lens">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">gravlens</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">grav_lens</a></li>
+          <li class="breadcrumb-item"><a href="grav_lens.html">grav_lens package</a></li>
+      <li class="breadcrumb-item active">grav_lens.utils package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/grav_lens.utils.rst.txt" rel="nofollow"> Ver código fuente de la página</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="grav-lens-utils-package">
+<h1>grav_lens.utils package<a class="headerlink" href="#grav-lens-utils-package" title="Link to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
+</section>
+<section id="module-grav_lens.utils.load_dataset">
+<span id="grav-lens-utils-load-dataset-module"></span><h2>grav_lens.utils.load_dataset module<a class="headerlink" href="#module-grav_lens.utils.load_dataset" title="Link to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="grav_lens.utils.load_dataset.calculate_memory_size">
+<span class="sig-prename descclassname"><span class="pre">grav_lens.utils.load_dataset.</span></span><span class="sig-name descname"><span class="pre">calculate_memory_size</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arrays</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/grav_lens/utils/load_dataset.html#calculate_memory_size"><span class="viewcode-link"><span class="pre">[fuente]</span></span></a><a class="headerlink" href="#grav_lens.utils.load_dataset.calculate_memory_size" title="Link to this definition"></a></dt>
+<dd><p>Calcula el tamaño total en memoria de una lista de arrays de numpy.</p>
+<p>Esta función suma el uso de memoria de cada array en la lista.</p>
+<dl>
+<dt>Parameters:</dt><dd><p>arrays (list of numpy.ndarray): Lista de numpy arrays.</p>
+</dd>
+<dt>Returns:</dt><dd><p>int: Tamaño total en memoria en bytes.</p>
+</dd>
+<dt>Examples:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">arrays</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">])]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">total_size</span> <span class="o">=</span> <span class="n">calculate_memory_size</span><span class="p">(</span><span class="n">arrays</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="grav_lens.utils.load_dataset.create_tf_dataset">
+<span class="sig-prename descclassname"><span class="pre">grav_lens.utils.load_dataset.</span></span><span class="sig-name descname"><span class="pre">create_tf_dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X_paths</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Y_paths</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/grav_lens/utils/load_dataset.html#create_tf_dataset"><span class="viewcode-link"><span class="pre">[fuente]</span></span></a><a class="headerlink" href="#grav_lens.utils.load_dataset.create_tf_dataset" title="Link to this definition"></a></dt>
+<dd><p>Crea un Dataset de TensorFlow a partir de listas de rutas de archivos .npy para X (características) y Y (etiquetas).</p>
+<p>Esta función carga los datos desde archivos .npy y construye un Dataset de TensorFlow, asegurando que 
+el número de muestras en X y Y coincida.</p>
+<dl>
+<dt>Parameters:</dt><dd><p>rutas_X (list of str): Lista de rutas a los archivos .npy que contienen las características.
+rutas_Y (list of str): Lista de rutas a los archivos .npy que contienen las etiquetas.</p>
+</dd>
+<dt>Returns:</dt><dd><p>tf.data.Dataset: Dataset de TensorFlow que contiene pares de datos X e Y.</p>
+</dd>
+<dt>Raises:</dt><dd><p>AssertionError: Si el número de muestras en X y Y no coincide.</p>
+</dd>
+<dt>Examples:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">rutas_X</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;X_data1.npy&#39;</span><span class="p">,</span> <span class="s1">&#39;X_data2.npy&#39;</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">rutas_Y</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Y_data1.npy&#39;</span><span class="p">,</span> <span class="s1">&#39;Y_data2.npy&#39;</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dataset</span> <span class="o">=</span> <span class="n">create_tf_dataset</span><span class="p">(</span><span class="n">rutas_X</span><span class="p">,</span> <span class="n">rutas_Y</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="grav_lens.utils.load_dataset.file_path_generator">
+<span class="sig-prename descclassname"><span class="pre">grav_lens.utils.load_dataset.</span></span><span class="sig-name descname"><span class="pre">file_path_generator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X_paths</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Y_paths</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/grav_lens/utils/load_dataset.html#file_path_generator"><span class="viewcode-link"><span class="pre">[fuente]</span></span></a><a class="headerlink" href="#grav_lens.utils.load_dataset.file_path_generator" title="Link to this definition"></a></dt>
+<dd><p>Generator function that yields file paths incrementally.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="grav_lens.utils.load_dataset.get_datasets">
+<span class="sig-prename descclassname"><span class="pre">grav_lens.utils.load_dataset.</span></span><span class="sig-name descname"><span class="pre">get_datasets</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_files</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">home</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'..'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">32</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val_split</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_split</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/grav_lens/utils/load_dataset.html#get_datasets"><span class="viewcode-link"><span class="pre">[fuente]</span></span></a><a class="headerlink" href="#grav_lens.utils.load_dataset.get_datasets" title="Link to this definition"></a></dt>
+<dd><p>Obtiene y divide los datasets en entrenamiento, validación y prueba,
+y los prepara para el entrenamiento con el tamaño de batch especificado.</p>
+<dl class="simple">
+<dt>Parameters:</dt><dd><p>data_index (str, optional): Índice o identificador para el dataset a cargar. Por defecto es “4”.
+max_files (int, optional): Número máximo de archivos a cargar. Por defecto es 100.
+home (str, optional): Directorio principal para el almacenamiento del dataset. Por defecto es “..”.
+batch_size (int, optional): Tamaño del batch para el dataset. Por defecto es 32.
+val_split (float, optional): Proporción de datos para el conjunto de validación. Por defecto es 0.2.
+test_split (float, optional): Proporción de datos para el conjunto de prueba. Por defecto es 0.1.</p>
+</dd>
+<dt>Returns:</dt><dd><p>tuple: Tres datasets de TensorFlow (train_dataset, val_dataset, test_dataset).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="grav_lens.utils.load_dataset.load_npy_file">
+<span class="sig-prename descclassname"><span class="pre">grav_lens.utils.load_dataset.</span></span><span class="sig-name descname"><span class="pre">load_npy_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/grav_lens/utils/load_dataset.html#load_npy_file"><span class="viewcode-link"><span class="pre">[fuente]</span></span></a><a class="headerlink" href="#grav_lens.utils.load_dataset.load_npy_file" title="Link to this definition"></a></dt>
+<dd><p>Function to load a .npy file and preprocess it.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="grav_lens.utils.load_dataset.load_tf_dataset">
+<span class="sig-prename descclassname"><span class="pre">grav_lens.utils.load_dataset.</span></span><span class="sig-name descname"><span class="pre">load_tf_dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'1'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_files</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">home</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'.'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/grav_lens/utils/load_dataset.html#load_tf_dataset"><span class="viewcode-link"><span class="pre">[fuente]</span></span></a><a class="headerlink" href="#grav_lens.utils.load_dataset.load_tf_dataset" title="Link to this definition"></a></dt>
+<dd><p>Carga un Dataset de TensorFlow a partir de listas de rutas de archivos .npy para X (características) y Y (etiquetas).</p>
+<p>Esta función recupera las rutas de los archivos usando un índice de datos y crea un Dataset de TensorFlow.</p>
+<dl>
+<dt>Parameters:</dt><dd><p>data_index (str, optional): Índice o identificador para el dataset a cargar. Por defecto es DATA_INDEX.
+max_files (int, optional): Número máximo de archivos a cargar. Por defecto es MAX_FILES.
+home (str, optional): Directorio principal para el almacenamiento del dataset. Por defecto es HOME.</p>
+</dd>
+<dt>Returns:</dt><dd><p>tf.data.Dataset: Dataset de TensorFlow que contiene datos X e Y.</p>
+</dd>
+<dt>Dependencias:</dt><dd><p>get_datasets_paths_from_index
+create_tf_dataset</p>
+</dd>
+<dt>Examples:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">dataset</span> <span class="o">=</span> <span class="n">load_tf_dataset</span><span class="p">(</span><span class="n">data_index</span><span class="o">=</span><span class="s1">&#39;001&#39;</span><span class="p">,</span> <span class="n">max_files</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="grav_lens.utils.load_dataset.prepare_dataset">
+<span class="sig-prename descclassname"><span class="pre">grav_lens.utils.load_dataset.</span></span><span class="sig-name descname"><span class="pre">prepare_dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">32</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shuffle_buffer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">drop_remainder</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/grav_lens/utils/load_dataset.html#prepare_dataset"><span class="viewcode-link"><span class="pre">[fuente]</span></span></a><a class="headerlink" href="#grav_lens.utils.load_dataset.prepare_dataset" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="grav_lens.utils.load_dataset.warnings_size_dataset">
+<span class="sig-prename descclassname"><span class="pre">grav_lens.utils.load_dataset.</span></span><span class="sig-name descname"><span class="pre">warnings_size_dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">total_files</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/grav_lens/utils/load_dataset.html#warnings_size_dataset"><span class="viewcode-link"><span class="pre">[fuente]</span></span></a><a class="headerlink" href="#grav_lens.utils.load_dataset.warnings_size_dataset" title="Link to this definition"></a></dt>
+<dd><p>Comprueba que existan suficientes muestras de cada uno,
+al crear batchs pueden quedar muestras vacias lo que provoca que no entrene con ese batch
+por tanto se ha optado por eliminar los batchs incompletos.</p>
+<p>Sin embargo en el caso de usar pocos datos y un batch_size significativo, pueden quedar batch vacios</p>
+</dd></dl>
+
+</section>
+<section id="module-grav_lens.utils.statistics">
+<span id="grav-lens-utils-statistics-module"></span><h2>grav_lens.utils.statistics module<a class="headerlink" href="#module-grav_lens.utils.statistics" title="Link to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="grav_lens.utils.statistics.get_peaks">
+<span class="sig-prename descclassname"><span class="pre">grav_lens.utils.statistics.</span></span><span class="sig-name descname"><span class="pre">get_peaks</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mean</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">std_dev</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigmas</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/grav_lens/utils/statistics.html#get_peaks"><span class="viewcode-link"><span class="pre">[fuente]</span></span></a><a class="headerlink" href="#grav_lens.utils.statistics.get_peaks" title="Link to this definition"></a></dt>
+<dd><p>Identifica los picos en un conjunto de datos que superan un umbral dado por la media más un múltiplo de la desviación estándar.</p>
+<dl>
+<dt>Parameters:</dt><dd><p>data (numpy.ndarray): Conjunto de datos en el cual buscar los picos.
+mean (float): Media del conjunto de datos.
+std_dev (float): Desviación estándar del conjunto de datos.
+sigmas (int, optional): Número de desviaciones estándar por encima de la media para considerar un pico. Por defecto es 5.</p>
+</dd>
+<dt>Returns:</dt><dd><p>list of tuples: Una lista de tuplas con las coordenadas de los picos identificados.</p>
+</dd>
+<dt>Examples:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">datos</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">((</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">media</span><span class="p">,</span> <span class="n">desviacion</span> <span class="o">=</span> <span class="n">get_stats</span><span class="p">(</span><span class="n">datos</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">picos</span> <span class="o">=</span> <span class="n">get_peaks</span><span class="p">(</span><span class="n">datos</span><span class="p">,</span> <span class="n">media</span><span class="p">,</span> <span class="n">desviacion</span><span class="p">,</span> <span class="n">sigmas</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="grav_lens.utils.statistics.get_stats">
+<span class="sig-prename descclassname"><span class="pre">grav_lens.utils.statistics.</span></span><span class="sig-name descname"><span class="pre">get_stats</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/grav_lens/utils/statistics.html#get_stats"><span class="viewcode-link"><span class="pre">[fuente]</span></span></a><a class="headerlink" href="#grav_lens.utils.statistics.get_stats" title="Link to this definition"></a></dt>
+<dd><p>Obtiene la media y la desviación estándar de un conjunto de datos.</p>
+<dl>
+<dt>Parameters:</dt><dd><p>data (numpy.ndarray): Conjunto de datos para el cual calcular las estadísticas.</p>
+</dd>
+<dt>Returns:</dt><dd><p>tuple: Una tupla que contiene la media y la desviación estándar.</p>
+</dd>
+<dt>Examples:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">datos</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">media</span><span class="p">,</span> <span class="n">desviacion</span> <span class="o">=</span> <span class="n">get_stats</span><span class="p">(</span><span class="n">datos</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="grav_lens.utils.statistics.plot_peaks">
+<span class="sig-prename descclassname"><span class="pre">grav_lens.utils.statistics.</span></span><span class="sig-name descname"><span class="pre">plot_peaks</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigmas</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/grav_lens/utils/statistics.html#plot_peaks"><span class="viewcode-link"><span class="pre">[fuente]</span></span></a><a class="headerlink" href="#grav_lens.utils.statistics.plot_peaks" title="Link to this definition"></a></dt>
+<dd><p>Grafica la distribución de datos y destaca los picos que superan un umbral especificado.</p>
+<dl>
+<dt>Parameters:</dt><dd><p>data (numpy.ndarray): Conjunto de datos a graficar.
+sigmas (int, optional): Número de desviaciones estándar por encima de la media para destacar los picos. Por defecto es 5.
+ax1 (matplotlib.axes.Axes, optional): Eje de la primera gráfica (distribución con picos). Si no se proporciona, se crea uno nuevo.
+ax2 (matplotlib.axes.Axes, optional): Eje de la segunda gráfica (histograma de valores). Si no se proporciona, se crea uno nuevo.</p>
+</dd>
+<dt>Returns:</dt><dd><p>None</p>
+</dd>
+<dt>Examples:</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">datos</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">((</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plot_peaks</span><span class="p">(</span><span class="n">datos</span><span class="p">,</span> <span class="n">sigmas</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-grav_lens.utils">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-grav_lens.utils" title="Link to this heading"></a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Pie de página">
+        <a href="grav_lens.testing.html" class="btn btn-neutral float-left" title="grav_lens.testing package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Anterior</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Derechos de autor 2024, Fabian Trigo.</p>
+  </div>
+
+  Compilado con <a href="https://www.sphinx-doc.org/">Sphinx</a> usando un
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">tema</a>
+    proporcionado por <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

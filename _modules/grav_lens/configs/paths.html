@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="es" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>grav_lens.configs.paths &mdash; documentación de gravlens - 1.1.0</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../_static/documentation_options.js?v=4711e12d"></script>
+        <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script src="../../../_static/translations.js?v=d190bf04"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Índice" href="../../../genindex.html" />
+    <link rel="search" title="Búsqueda" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            gravlens
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Buscar documentos" aria-label="Buscar documentos" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">grav_lens</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">gravlens</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Código de módulo</a></li>
+      <li class="breadcrumb-item active">grav_lens.configs.paths</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Código fuente para grav_lens.configs.paths</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Se encarga del managing de los paths para facilitar la modelo</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="c1"># configs/paths.py</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="n">HOME</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span>
+
+<span class="c1"># default values</span>
+<span class="n">MAX_FILES</span> <span class="o">=</span> <span class="mi">100</span>
+<span class="n">DATA_INDEX</span> <span class="o">=</span> <span class="s1">&#39;1&#39;</span>
+
+<div class="viewcode-block" id="get_data_directory">
+<a class="viewcode-back" href="../../../grav_lens.configs.html#grav_lens.configs.paths.get_data_directory">[documentos]</a>
+<span class="k">def</span> <span class="nf">get_data_directory</span><span class="p">(</span><span class="n">data_index</span><span class="o">=</span><span class="n">DATA_INDEX</span><span class="p">,</span> <span class="n">home</span><span class="o">=</span><span class="n">HOME</span><span class="p">,</span> <span class="n">max_attempts</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Busca un directorio de datos específico, intentando diferentes índices numéricos si el directorio</span>
+<span class="sd">    no existe.</span>
+
+<span class="sd">    Esta función busca una carpeta de datos en el directorio especificado por &#39;home&#39; y &#39;data_index&#39;.</span>
+<span class="sd">    Si no encuentra la carpeta con el &#39;data_index&#39; proporcionado, intenta con otros números hasta </span>
+<span class="sd">    un máximo de &#39;max_attempts&#39;.</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">        data_index (str, optional): El índice de datos inicial a buscar. Por defecto es DATA_INDEX.</span>
+<span class="sd">        home (str, optional): El directorio principal donde se encuentran los datos. Por defecto es HOME.</span>
+<span class="sd">        max_attempts (int, optional): El número máximo de intentos para encontrar un directorio válido. Por defecto es 10.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        tuple: Rutas a los directorios de los datos &#39;EPSILON&#39; y &#39;KAPPA&#39;.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        FileNotFoundError: Si no se encuentra un directorio de datos válido después de &#39;max_attempts&#39; intentos.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; x_data, y_data = get_data_directory(data_index=&#39;1&#39;)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">attempt</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">data_index</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">data_index</span><span class="p">)</span> <span class="o">+</span> <span class="n">max_attempts</span><span class="p">):</span>
+        <span class="n">data_folder</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">home</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">attempt</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">data_folder</span><span class="p">):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Using data folder:&#39;</span><span class="p">,</span> <span class="n">data_folder</span><span class="p">)</span>
+            <span class="n">x_data</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">data_folder</span><span class="p">,</span> <span class="s1">&#39;EPSILON&#39;</span><span class="p">)</span>
+            <span class="n">y_data</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">data_folder</span><span class="p">,</span> <span class="s1">&#39;KAPPA&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">x_data</span><span class="p">,</span> <span class="n">y_data</span>
+
+    <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No se encontró un directorio de datos válido después de </span><span class="si">{</span><span class="n">max_attempts</span><span class="si">}</span><span class="s2"> intentos a partir de </span><span class="si">{</span><span class="n">data_index</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span></div>
+
+
+
+
+<div class="viewcode-block" id="list_files_from_directory">
+<a class="viewcode-back" href="../../../grav_lens.configs.html#grav_lens.configs.paths.list_files_from_directory">[documentos]</a>
+<span class="k">def</span> <span class="nf">list_files_from_directory</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="n">max_files</span><span class="o">=</span><span class="n">MAX_FILES</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Lista los primeros `max_files` archivos en el directorio `directory`.</span>
+<span class="sd">    Los nombres de los archivos se almacenan en la lista global `file_names`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">file_names</span> <span class="o">=</span> <span class="p">[]</span>
+    
+    <span class="c1"># Obtener los archivos en el directorio</span>
+    
+    <span class="k">for</span> <span class="n">root</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">files</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">walk</span><span class="p">(</span><span class="n">directory</span><span class="p">):</span>
+        <span class="c1"># Limitar a los primeros `max_files` archivos</span>
+        <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">files</span><span class="p">[:</span><span class="n">max_files</span><span class="p">]:</span>
+            <span class="n">file_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="n">file</span><span class="p">))</span>
+        <span class="k">break</span>  <span class="c1"># Salir después de la primera iteración para no recorrer subdirectorios</span>
+    
+    <span class="k">return</span> <span class="n">file_names</span></div>
+
+
+
+<div class="viewcode-block" id="get_datasets_paths_from_index">
+<a class="viewcode-back" href="../../../grav_lens.configs.html#grav_lens.configs.paths.get_datasets_paths_from_index">[documentos]</a>
+<span class="k">def</span> <span class="nf">get_datasets_paths_from_index</span><span class="p">(</span><span class="n">data_index</span><span class="o">=</span><span class="n">DATA_INDEX</span><span class="p">,</span> <span class="n">max_files</span><span class="o">=</span><span class="n">MAX_FILES</span><span class="p">,</span> <span class="n">home</span><span class="o">=</span><span class="n">HOME</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Obtiene dos valores, uno es la lista de nombres correspondientes a X, las features</span>
+<span class="sd">    y el otro es a Y, la distribucion</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">x_data</span><span class="p">,</span> <span class="n">y_data</span> <span class="o">=</span> <span class="n">get_data_directory</span><span class="p">(</span><span class="n">data_index</span><span class="p">,</span> <span class="n">home</span><span class="p">)</span>
+
+    <span class="n">X</span> <span class="o">=</span> <span class="n">list_files_from_directory</span><span class="p">(</span><span class="n">x_data</span><span class="p">,</span> <span class="n">max_files</span><span class="p">)</span>
+    <span class="n">Y</span> <span class="o">=</span> <span class="n">list_files_from_directory</span><span class="p">(</span><span class="n">y_data</span><span class="p">,</span> <span class="n">max_files</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">X</span><span class="p">,</span> <span class="n">Y</span></div>
+
+
+
+<span class="c1"># Predicción</span>
+<div class="viewcode-block" id="get_testing_paths">
+<a class="viewcode-back" href="../../../grav_lens.configs.html#grav_lens.configs.paths.get_testing_paths">[documentos]</a>
+<span class="k">def</span> <span class="nf">get_testing_paths</span><span class="p">(</span><span class="n">testing_dir</span><span class="p">,</span> <span class="n">max_files</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
+    <span class="c1"># 1. Obtener el directorio para &quot;testing/EPSILON&quot;</span>
+    
+    <span class="c1"># 2. Usar `list_files_from_directory` para obtener rutas de archivos</span>
+    <span class="n">file_paths</span> <span class="o">=</span> <span class="n">list_files_from_directory</span><span class="p">(</span><span class="n">testing_dir</span><span class="p">,</span> <span class="n">max_files</span><span class="o">=</span><span class="n">max_files</span><span class="p">)</span>
+    
+    <span class="c1"># 3. Devolver un generador con las rutas de archivos y los nombres base</span>
+    <span class="k">for</span> <span class="n">file_path</span> <span class="ow">in</span> <span class="n">file_paths</span><span class="p">:</span>
+        <span class="k">yield</span> <span class="n">file_path</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span></div>
+
+
+
+
+
+
+
+
+
+<span class="c1"># Bloque principal para ejecutar el script</span>
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">x_data</span><span class="p">,</span> <span class="n">y_data</span> <span class="o">=</span> <span class="n">get_data_directory</span><span class="p">(</span><span class="n">DATA_INDEX</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;x_data:&#39;</span><span class="p">,</span> <span class="n">x_data</span><span class="p">)</span>
+    <span class="n">file_names</span> <span class="o">=</span> <span class="n">list_files_from_directory</span><span class="p">(</span><span class="n">x_data</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    
+    <span class="c1"># Imprimir la lista de archivos para verificar el funcionamiento</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Primeros </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">file_names</span><span class="p">)</span><span class="si">}</span><span class="s2"> archivos en </span><span class="si">{</span><span class="n">x_data</span><span class="si">}</span><span class="s2">:&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">file_names</span><span class="p">[:</span><span class="mi">10</span><span class="p">]:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+
+    <span class="c1"># Probar obtener todos los paths</span>
+    <span class="n">X</span><span class="p">,</span> <span class="n">Y</span> <span class="o">=</span> <span class="n">get_datasets_paths_from_index</span><span class="p">(</span><span class="n">DATA_INDEX</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">x</span><span class="p">,</span><span class="n">y</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">Y</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="s1">&#39;--&#39;</span><span class="p">,</span><span class="n">y</span><span class="p">)</span>
+
+    
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Derechos de autor 2024, Fabian Trigo.</p>
+  </div>
+
+  Compilado con <a href="https://www.sphinx-doc.org/">Sphinx</a> usando un
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">tema</a>
+    proporcionado por <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

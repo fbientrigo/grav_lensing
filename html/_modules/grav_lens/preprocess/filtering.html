@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="es" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>grav_lens.preprocess.filtering &mdash; documentación de gravlens - 1.1.0</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../_static/documentation_options.js?v=4711e12d"></script>
+        <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script src="../../../_static/translations.js?v=d190bf04"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Índice" href="../../../genindex.html" />
+    <link rel="search" title="Búsqueda" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            gravlens
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Buscar documentos" aria-label="Buscar documentos" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">grav_lens</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">gravlens</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Código de módulo</a></li>
+      <li class="breadcrumb-item active">grav_lens.preprocess.filtering</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Código fuente para grav_lens.preprocess.filtering</h1><div class="highlight"><pre>
+<span></span>
+<span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="nn">tf</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="kn">import</span> <span class="n">MinMaxScaler</span>
+
+
+
+<span class="c1"># -.-------- filtering ---------</span>
+
+<div class="viewcode-block" id="apply_fourier_transform">
+<a class="viewcode-back" href="../../../grav_lens.preprocess.html#grav_lens.preprocess.filtering.apply_fourier_transform">[documentos]</a>
+<span class="k">def</span> <span class="nf">apply_fourier_transform</span><span class="p">(</span><span class="n">image</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Aplica la Transformada de Fourier bidimensional a una imagen.</span>
+<span class="sd">    </span>
+<span class="sd">    Parámetros:</span>
+<span class="sd">        image (numpy array): Imagen en formato numpy array (2D).</span>
+<span class="sd">        </span>
+<span class="sd">    Retorna:</span>
+<span class="sd">        f_transform_shifted (numpy array): Transformada de Fourier desplazada con fftshift.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">f_transform</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fft2</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fftshift</span><span class="p">(</span><span class="n">f_transform</span><span class="p">)</span>  <span class="c1"># Mover las frecuencias bajas al centro</span></div>
+
+
+
+<div class="viewcode-block" id="inverse_fourier_transform">
+<a class="viewcode-back" href="../../../grav_lens.preprocess.html#grav_lens.preprocess.filtering.inverse_fourier_transform">[documentos]</a>
+<span class="k">def</span> <span class="nf">inverse_fourier_transform</span><span class="p">(</span><span class="n">f_transform_shifted</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Aplica la Transformada Inversa de Fourier a una imagen.</span>
+<span class="sd">    </span>
+<span class="sd">    Parámetros:</span>
+<span class="sd">        f_transform_shifted (numpy array): Transformada de Fourier desplazada.</span>
+<span class="sd">        </span>
+<span class="sd">    Retorna:</span>
+<span class="sd">        image_reconstructed (numpy array): Imagen reconstruida a partir de la transformada de Fourier.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">f_transform</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">ifftshift</span><span class="p">(</span><span class="n">f_transform_shifted</span><span class="p">)</span>  <span class="c1"># Deshacer el shift</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">ifft2</span><span class="p">(</span><span class="n">f_transform</span><span class="p">)</span><span class="o">.</span><span class="n">real</span>  <span class="c1"># Obtener la imagen real reconstruida</span></div>
+
+
+
+
+
+<div class="viewcode-block" id="apply_lowpass_filter">
+<a class="viewcode-back" href="../../../grav_lens.preprocess.html#grav_lens.preprocess.filtering.apply_lowpass_filter">[documentos]</a>
+<span class="k">def</span> <span class="nf">apply_lowpass_filter</span><span class="p">(</span><span class="n">f_transform</span><span class="p">,</span> <span class="n">cutoff</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Aplica un filtro pasa bajas (low-pass) a la Transformada de Fourier.</span>
+<span class="sd">    </span>
+<span class="sd">    Parámetros:</span>
+<span class="sd">        f_transform (numpy array): Transformada de Fourier desplazada.</span>
+<span class="sd">        cutoff (float): Frecuencia de corte para el filtro (entre 0 y 1, relativa al tamaño de la imagen).</span>
+<span class="sd">        </span>
+<span class="sd">    Retorna:</span>
+<span class="sd">        lowpass_filtered (numpy array): Transformada de Fourier filtrada con pasa bajas.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">rows</span><span class="p">,</span> <span class="n">cols</span> <span class="o">=</span> <span class="n">f_transform</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">crow</span><span class="p">,</span> <span class="n">ccol</span> <span class="o">=</span> <span class="n">rows</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">cols</span> <span class="o">//</span> <span class="mi">2</span>  <span class="c1"># Centro de la imagen</span>
+
+    <span class="c1"># Crear una máscara pasa bajas (con 1 en el centro y 0 en los bordes)</span>
+    <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">rows</span><span class="p">,</span> <span class="n">cols</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+    <span class="n">radius</span> <span class="o">=</span> <span class="n">cutoff</span> <span class="o">*</span> <span class="nb">min</span><span class="p">(</span><span class="n">crow</span><span class="p">,</span> <span class="n">ccol</span><span class="p">)</span>  <span class="c1"># Radio de corte basado en la frecuencia relativa</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">rows</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">cols</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">i</span> <span class="o">-</span> <span class="n">crow</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">j</span> <span class="o">-</span> <span class="n">ccol</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">radius</span><span class="p">:</span>
+                <span class="n">mask</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+    
+    <span class="c1"># Aplicar la máscara a la Transformada de Fourier</span>
+    <span class="n">lowpass_filtered</span> <span class="o">=</span> <span class="n">f_transform</span> <span class="o">*</span> <span class="n">mask</span>
+    <span class="k">return</span> <span class="n">lowpass_filtered</span></div>
+
+
+<div class="viewcode-block" id="apply_highpass_filter">
+<a class="viewcode-back" href="../../../grav_lens.preprocess.html#grav_lens.preprocess.filtering.apply_highpass_filter">[documentos]</a>
+<span class="k">def</span> <span class="nf">apply_highpass_filter</span><span class="p">(</span><span class="n">f_transform</span><span class="p">,</span> <span class="n">cutoff</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Aplica un filtro pasa altas (high-pass) a la Transformada de Fourier.</span>
+<span class="sd">    </span>
+<span class="sd">    Parámetros:</span>
+<span class="sd">        f_transform (numpy array): Transformada de Fourier desplazada.</span>
+<span class="sd">        cutoff (float): Frecuencia de corte para el filtro (entre 0 y 1, relativa al tamaño de la imagen).</span>
+<span class="sd">        </span>
+<span class="sd">    Retorna:</span>
+<span class="sd">        highpass_filtered (numpy array): Transformada de Fourier filtrada con pasa altas.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">rows</span><span class="p">,</span> <span class="n">cols</span> <span class="o">=</span> <span class="n">f_transform</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">crow</span><span class="p">,</span> <span class="n">ccol</span> <span class="o">=</span> <span class="n">rows</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">cols</span> <span class="o">//</span> <span class="mi">2</span>  <span class="c1"># Centro de la imagen</span>
+
+    <span class="c1"># Crear una máscara pasa altas (con 0 en el centro y 1 en los bordes)</span>
+    <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">rows</span><span class="p">,</span> <span class="n">cols</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+    <span class="n">radius</span> <span class="o">=</span> <span class="n">cutoff</span> <span class="o">*</span> <span class="nb">min</span><span class="p">(</span><span class="n">crow</span><span class="p">,</span> <span class="n">ccol</span><span class="p">)</span>  <span class="c1"># Radio de corte basado en la frecuencia relativa</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">rows</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">cols</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">i</span> <span class="o">-</span> <span class="n">crow</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">j</span> <span class="o">-</span> <span class="n">ccol</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">radius</span><span class="p">:</span>
+                <span class="n">mask</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+    
+    <span class="c1"># Aplicar la máscara a la Transformada de Fourier</span>
+    <span class="n">highpass_filtered</span> <span class="o">=</span> <span class="n">f_transform</span> <span class="o">*</span> <span class="n">mask</span>
+    <span class="k">return</span> <span class="n">highpass_filtered</span></div>
+
+
+<div class="viewcode-block" id="process_image_with_filters">
+<a class="viewcode-back" href="../../../grav_lens.preprocess.html#grav_lens.preprocess.filtering.process_image_with_filters">[documentos]</a>
+<span class="k">def</span> <span class="nf">process_image_with_filters</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">cutoff</span><span class="o">=</span><span class="mf">0.1</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Procesa una imagen para separar las componentes de baja y alta frecuencia usando filtros pasa bajas y pasa altas.</span>
+<span class="sd">    </span>
+<span class="sd">    Parámetros:</span>
+<span class="sd">        image (numpy array): Imagen en formato numpy array (2D).</span>
+<span class="sd">        cutoff (float): Frecuencia de corte para los filtros (entre 0 y 1, relativa al tamaño de la imagen).</span>
+<span class="sd">        </span>
+<span class="sd">    Retorna:</span>
+<span class="sd">        low_freq_image (numpy array): Imagen de baja frecuencia.</span>
+<span class="sd">        high_freq_image (numpy array): Imagen de alta frecuencia.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Aplicar la Transformada de Fourier con fftshift</span>
+    <span class="n">f_transform_shifted</span> <span class="o">=</span> <span class="n">apply_fourier_transform</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+    
+    <span class="c1"># Aplicar filtro pasa bajas</span>
+    <span class="n">low_freq_transform</span> <span class="o">=</span> <span class="n">apply_lowpass_filter</span><span class="p">(</span><span class="n">f_transform_shifted</span><span class="p">,</span> <span class="n">cutoff</span><span class="p">)</span>
+    
+    <span class="c1"># Aplicar filtro pasa altas</span>
+    <span class="n">high_freq_transform</span> <span class="o">=</span> <span class="n">apply_highpass_filter</span><span class="p">(</span><span class="n">f_transform_shifted</span><span class="p">,</span> <span class="n">cutoff</span><span class="p">)</span>
+    
+    <span class="c1"># Reconstruir las imágenes de baja y alta frecuencia</span>
+    <span class="n">low_freq_image</span> <span class="o">=</span> <span class="n">inverse_fourier_transform</span><span class="p">(</span><span class="n">low_freq_transform</span><span class="p">)</span>
+    <span class="n">high_freq_image</span> <span class="o">=</span> <span class="n">inverse_fourier_transform</span><span class="p">(</span><span class="n">high_freq_transform</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">low_freq_image</span><span class="p">,</span> <span class="n">high_freq_image</span></div>
+
+
+
+<div class="viewcode-block" id="process_batch_filters">
+<a class="viewcode-back" href="../../../grav_lens.preprocess.html#grav_lens.preprocess.filtering.process_batch_filters">[documentos]</a>
+<span class="k">def</span> <span class="nf">process_batch_filters</span><span class="p">(</span><span class="n">y_batch</span><span class="p">,</span> <span class="n">cutoff</span><span class="o">=</span><span class="mf">0.1</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Procesa un batch de imágenes para separar las componentes de baja y alta frecuencia.</span>
+<span class="sd">    </span>
+<span class="sd">    Parámetros:</span>
+<span class="sd">        y_batch (numpy array): Batch de imágenes (batch_size, 128, 128, 1).</span>
+<span class="sd">        threshold (float): Umbral para separar las frecuencias.</span>
+<span class="sd">        </span>
+<span class="sd">    Retorna:</span>
+<span class="sd">        low_freq_batch (numpy array): Batch de imágenes de baja frecuencia.</span>
+<span class="sd">        high_freq_batch (numpy array): Batch de imágenes de alta frecuencia.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">batch_size</span> <span class="o">=</span> <span class="n">y_batch</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">low_freq_batch</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">high_freq_batch</span> <span class="o">=</span> <span class="p">[]</span>
+    
+    <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">batch_size</span><span class="p">):</span>
+        <span class="n">image</span> <span class="o">=</span> <span class="n">y_batch</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:,</span> <span class="mi">0</span><span class="p">]</span>  <span class="c1"># Seleccionar la imagen del batch</span>
+        <span class="n">low_freq_image</span><span class="p">,</span> <span class="n">high_freq_image</span> <span class="o">=</span> <span class="n">process_image_with_filters</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">cutoff</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+        
+        <span class="n">low_freq_batch</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">low_freq_image</span><span class="p">)</span>
+        <span class="n">high_freq_batch</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">high_freq_image</span><span class="p">)</span>
+    
+    <span class="c1"># Convertir a formato numpy arrays con la misma forma que el batch original</span>
+    <span class="n">low_freq_batch</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">low_freq_batch</span><span class="p">),</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">high_freq_batch</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">high_freq_batch</span><span class="p">),</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">low_freq_batch</span><span class="p">,</span> <span class="n">high_freq_batch</span></div>
+
+<span class="c1"># -------------------------------------------------------------------------</span>
+
+<span class="c1"># ------ Scaler  ---------------</span>
+<div class="viewcode-block" id="CustomMinMaxScaler">
+<a class="viewcode-back" href="../../../grav_lens.preprocess.html#grav_lens.preprocess.filtering.CustomMinMaxScaler">[documentos]</a>
+<span class="k">class</span> <span class="nc">CustomMinMaxScaler</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">feature_range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">clip</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Inicializa el MinMaxScaler con el rango de características deseado.</span>
+<span class="sd">        </span>
+<span class="sd">        Parámetros:</span>
+<span class="sd">        - feature_range: El rango en el que los datos serán escalados. Por defecto es (0, 1).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scaler</span> <span class="o">=</span> <span class="n">MinMaxScaler</span><span class="p">(</span><span class="n">feature_range</span><span class="o">=</span><span class="n">feature_range</span><span class="p">,</span> <span class="n">clip</span><span class="o">=</span><span class="n">clip</span><span class="p">)</span>
+
+<div class="viewcode-block" id="CustomMinMaxScaler.fit_scaler">
+<a class="viewcode-back" href="../../../grav_lens.preprocess.html#grav_lens.preprocess.filtering.CustomMinMaxScaler.fit_scaler">[documentos]</a>
+    <span class="k">def</span> <span class="nf">fit_scaler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Función para ajustar el MinMaxScaler a los datos de entrenamiento.</span>
+<span class="sd">        </span>
+<span class="sd">        Parámetros:</span>
+<span class="sd">        - dataset: Un iterable o generador de datos que contiene las imágenes en lotes (batch_size, height, width, 1)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">for</span> <span class="n">X_batch</span><span class="p">,</span> <span class="n">y_batch</span> <span class="ow">in</span> <span class="n">dataset</span><span class="p">:</span>
+            <span class="n">y_batch</span> <span class="o">=</span> <span class="n">y_batch</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># Aplanar el batch de imágenes</span>
+            <span class="n">y_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">y_batch</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scaler</span><span class="o">.</span><span class="n">partial_fit</span><span class="p">(</span><span class="n">y_data</span><span class="p">)</span>  <span class="c1"># Ajustar el scaler a los datos</span></div>
+
+
+
+
+<div class="viewcode-block" id="CustomMinMaxScaler.transform">
+<a class="viewcode-back" href="../../../grav_lens.preprocess.html#grav_lens.preprocess.filtering.CustomMinMaxScaler.transform">[documentos]</a>
+    <span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y_batch</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Función para normalizar un batch de datos usando el scaler ajustado.</span>
+<span class="sd">        </span>
+<span class="sd">        Parámetros:</span>
+<span class="sd">        - y_batch: Un batch de imágenes en forma de tensor (batch_size, height, width, 1)</span>
+<span class="sd">        </span>
+<span class="sd">        Retorna:</span>
+<span class="sd">        - El batch normalizado.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">y_batch</span> <span class="o">=</span> <span class="n">y_batch</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>  <span class="c1"># Convertir a numpy</span>
+        <span class="n">y_batch_flat</span> <span class="o">=</span> <span class="n">y_batch</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>  <span class="c1"># Aplanar</span>
+        <span class="n">y_batch_scaled</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scaler</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">y_batch_flat</span><span class="p">)</span>  <span class="c1"># Escalar</span>
+        <span class="n">y_batch_scaled</span> <span class="o">=</span> <span class="n">y_batch_scaled</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">y_batch</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>  <span class="c1"># Volver a la forma original</span>
+        <span class="k">return</span> <span class="n">tf</span><span class="o">.</span><span class="n">convert_to_tensor</span><span class="p">(</span><span class="n">y_batch_scaled</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>  <span class="c1"># Convertir de vuelta a tensor</span></div>
+
+
+<div class="viewcode-block" id="CustomMinMaxScaler.inverse_transform">
+<a class="viewcode-back" href="../../../grav_lens.preprocess.html#grav_lens.preprocess.filtering.CustomMinMaxScaler.inverse_transform">[documentos]</a>
+    <span class="k">def</span> <span class="nf">inverse_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y_batch_scaled</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Función para desescalar un batch de datos usando el scaler ajustado.</span>
+<span class="sd">        </span>
+<span class="sd">        Parámetros:</span>
+<span class="sd">        - y_batch_scaled: Un batch normalizado de imágenes (batch_size, height, width, 1)</span>
+<span class="sd">        </span>
+<span class="sd">        Retorna:</span>
+<span class="sd">        - El batch desescalado a los valores originales.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">y_batch_flat</span> <span class="o">=</span> <span class="n">y_batch_scaled</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>  <span class="c1"># Aplanar</span>
+        <span class="n">y_batch_original</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scaler</span><span class="o">.</span><span class="n">inverse_transform</span><span class="p">(</span><span class="n">y_batch_flat</span><span class="p">)</span>  <span class="c1"># Desescalar</span>
+        <span class="n">y_batch_original</span> <span class="o">=</span> <span class="n">y_batch_original</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">y_batch_scaled</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>  <span class="c1"># Volver a la forma original</span>
+        <span class="k">return</span> <span class="n">y_batch_original</span></div>
+</div>
+
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Derechos de autor 2024, Fabian Trigo.</p>
+  </div>
+
+  Compilado con <a href="https://www.sphinx-doc.org/">Sphinx</a> usando un
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">tema</a>
+    proporcionado por <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
