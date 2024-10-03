@@ -4,6 +4,7 @@ env
 data/
 final/data/
 logs/
+06_pipeline_parametric/models/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
