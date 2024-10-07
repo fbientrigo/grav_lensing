@@ -155,8 +155,9 @@ def load_tf_dataset(data_index=DATA_INDEX, max_files=MAX_FILES, home=HOME):
 #     test_dataset = tf.data.Dataset.from_tensor_slices((X_test, Y_test))
 #     return train_dataset, val_dataset, test_dataset
 
-def prepare_dataset(dataset, batch_size=32, shuffle_buffer=1000, drop_remainder=False):
-    dataset = dataset.shuffle(buffer_size=shuffle_buffer)  # Mezclar datos
+def prepare_dataset(dataset, batch_size=32, shuffle_buffer=1000, drop_remainder=False, shuffle=True):
+    if shuffle:
+        dataset = dataset.shuffle(buffer_size=shuffle_buffer)  # Mezclar datos
     dataset = dataset.batch(batch_size, drop_remainder=drop_remainder)  # Batching
 
     dataset = dataset.prefetch(buffer_size=tf.data.experimental.AUTOTUNE)  # Prefetch para optimización
@@ -267,7 +268,7 @@ def load_testing_dataset(dataset_path, batch_size=32, max_files=-1):
     )
     
     # 5. Preparar el dataset (batch, prefetch)
-    dataset = prepare_dataset(dataset, batch_size=batch_size)
+    dataset = prepare_dataset(dataset, batch_size=batch_size, shuffle=False)
     
     return dataset
 

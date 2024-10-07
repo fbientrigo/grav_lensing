@@ -508,11 +508,13 @@ def reconstruct_batch_images(principal_components, gaussians, batch_size, ipca_l
     Retorna:
         batch_images (numpy array): Batch de imágenes reconstruidas con shape (batch, 128, 128, 1).
     """
+    actual_batch_size = principal_components.shape[0]
+
     # Reconstruir la parte de baja frecuencia
-    lowfreq_images = reconstruct_lowfreq_from_pca(principal_components, batch_size, ipca_low)
+    lowfreq_images = reconstruct_lowfreq_from_pca(principal_components, actual_batch_size, ipca_low)
     
     # Reconstruir la parte de alta frecuencia
-    highfreq_images = reconstruct_highfreq_from_gmm(gaussians, batch_size, image_shape)
+    highfreq_images = reconstruct_highfreq_from_gmm(gaussians, actual_batch_size, image_shape)
     
     # Sumar las dos componentes para obtener las imágenes originales
     batch_images = lowfreq_images + highfreq_images
